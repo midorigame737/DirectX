@@ -1,6 +1,7 @@
 #include<Windows.h>
-#ifdef _DEBUG
+#ifdef _DEBUG 
 #include<iostream>
+
 #endif
 
 using namespace std;
@@ -10,12 +11,12 @@ using namespace std;
 //@remarks この関数はデバッグ用 デバッグ時にしか動かない
 void DebugOutputFormatString(const char* format, ...)
 {
-#ifdef _DEBUG
-	va_list valist;//可変長引数格納するところ
-	va_start(valist, format);//可変長引数リストへのアクセス,va_startの第二引数は最後の固定引数
-	printf(format, valist);
-	va_end(valist);
-#endif
+	#ifdef _DEBUG
+		va_list valist;//可変長引数格納するところ
+		va_start(valist, format);//可変長引数リストへのアクセス,va_startの第二引数は最後の固定引数
+		printf(format, valist);
+		va_end(valist);
+	#endif
 }
 
 LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
@@ -28,6 +29,9 @@ LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 }
 #ifdef _DEBUG
 int main() {
+	WNDCLASSEX w = {};
+	w.cbSize = sizeof(WNDCLASSEX);
+
 #else
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -36,3 +40,4 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	getchar();
 	return 0;
 }
+
