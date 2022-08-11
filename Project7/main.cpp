@@ -1,7 +1,9 @@
 #include<Windows.h>
 #ifdef _DEBUG 
 #include<iostream>
-
+#include <tchar.h>
+#define WINDOW_WIDTH 1280
+#define WINDOW_HEIGHT 720
 #endif
 
 using namespace std;
@@ -31,7 +33,38 @@ LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 int main() {
 	WNDCLASSEX w = {};
 	w.cbSize = sizeof(WNDCLASSEX);
-
+	w.lpfnWndProc = (WNDPROC)WindowProcedure;//コールバック関数の指定
+	w.lpszClassName = _T("DX12sample");//アプリケーション名てきとうでいい
+	w.hInstance = GetModuleHandle(nullptr);//ハンドルの取得
+	RegisterClassEx(&w);//アプリケーションクラス（ウィンドウの指定をOSに伝える）
+	RECT wrc = { 0,0,WINDOW_WIDTH,WINDOW_HEIGHT};//ウィンドウサイズ決定
+	//関数でウィンドウサイズを補正する
+	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
+	//ウィンドウの生成
+	HWND hwnd = CreateWindow(w.lpszClassName,//クラス名指定
+							_T("DX12テスト"),//タイトルバーの文字
+							WS_OVERLAPPEDWINDOW,//タイトルバーと境界線があるウィンドウ
+							CW_USEDEFAULT,//X座標はOSに任せる
+							CW_USEDEFAULT,//Y座標はOSに任せる
+							wrc.right-wrc.left,//ウィンドウ幅
+							wrc.bottom-wrc.top,//ウィンドウ高
+							nullptr,//親ウィンドウタイトル
+							nullptr,
+							w.hInstance,//呼び出しアプリケーションハンドル
+							nullptr);
+	ShowWindow(hwnd, SW_SHOW);
+	MSG msg = {};
+	while (true) {
+		if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
+		//アプリケーションが終わるときにmessageがWM_QUITになる
+		if (msg.message == WM_QUIT) {
+			break;
+		}
+	}
+	UnregisterClass(w.lpszClassName, w.hInstance);//もうクラスを使わないので登録解除
 #else
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
