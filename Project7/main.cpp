@@ -4,6 +4,8 @@
 #include <tchar.h>
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
+#pragma comment(lib,"d3d12.lib")
+#pragma comment(lib,"dxgi.lib")
 #endif
 
 using namespace std;
