@@ -2,6 +2,8 @@
 #ifdef _DEBUG 
 #include<iostream>
 #include <tchar.h>
+#include<d3d12.h>
+#include<dxgi1_6.h>
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
 #pragma comment(lib,"d3d12.lib")
@@ -33,7 +35,24 @@ LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 }
 #ifdef _DEBUG
 int main() {
+	//Direct3D基本オブジェクト生成
+	ID3D12Device* _dev = nullptr;
+	IDXGIFactory6* _dxgiFactory = nullptr;
+	IDXGISwapChain4* _swapchain = nullptr;
 	WNDCLASSEX w = {};
+	D3D_FEATURE_LEVEL levels[] = {
+		D3D_FEATURE_LEVEL_12_1,
+		D3D_FEATURE_LEVEL_12_0,
+		D3D_FEATURE_LEVEL_11_1,
+		D3D_FEATURE_LEVEL_11_0,
+	};
+	D3D_FEATURE_LEVEL feature_level;
+	for (auto lv : levels) {
+		if (D3D12CreateDevice(nullptr, lv, IID_PPV_ARGS(&_dev)) == S_OK) {
+			feature_level = lv;
+			break;
+		}
+	}
 	w.cbSize = sizeof(WNDCLASSEX);
 	w.lpfnWndProc = (WNDPROC)WindowProcedure;//コールバック関数の指定
 	w.lpszClassName = _T("DX12sample");//アプリケーション名てきとうでいい
