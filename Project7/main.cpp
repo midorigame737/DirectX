@@ -1,4 +1,5 @@
 #include<Windows.h>
+#include<vector>
 #ifdef _DEBUG 
 #include<iostream>
 #include <tchar.h>
@@ -52,6 +53,15 @@ int main() {
 			feature_level = lv;
 			break;
 		}
+	}
+	auto result = CreateDXGIFactory1(IID_PPV_ARGS(&_dxgiFactory));
+	//アダプタの列挙型
+	std::vector<IDXGIAdapter*>adapters;
+	//ここに特定の名前を持つアダプターオブジェクトが入る
+	IDXGIAdapter* tmpAdapter = nullptr;
+	//利用可能なアダプターを列挙し、列挙されたアダプターをstd::vectorに格納
+	for (int i = 0; _dxgiFactory->EnumAdapters(i, &tmpAdapter) != DXGI_ERROR_NOT_FOUND; ++i) {
+		adapters.push_back(tmpAdapter);
 	}
 	w.cbSize = sizeof(WNDCLASSEX);
 	w.lpfnWndProc = (WNDPROC)WindowProcedure;//コールバック関数の指定
