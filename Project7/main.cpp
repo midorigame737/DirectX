@@ -1,9 +1,14 @@
 #include<Windows.h>
+#include<vector>
 #ifdef _DEBUG 
 #include<iostream>
 #include <tchar.h>
+#include<d3d12.h>
+#include<dxgi1_6.h>
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
+#pragma comment(lib,"d3d12.lib")
+#pragma comment(lib,"dxgi.lib")
 #endif
 
 using namespace std;
@@ -31,7 +36,44 @@ LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 }
 #ifdef _DEBUG
 int main() {
+	//Direct3D基本オブジェクト生成
+	ID3D12Device* _dev = nullptr;
+	IDXGIFactory6* _dxgiFactory = nullptr;
+	IDXGISwapChain4* _swapchain = nullptr;
 	WNDCLASSEX w = {};
+	D3D_FEATURE_LEVEL levels[] = {
+		D3D_FEATURE_LEVEL_12_1,
+		D3D_FEATURE_LEVEL_12_0,
+		D3D_FEATURE_LEVEL_11_1,
+		D3D_FEATURE_LEVEL_11_0,
+	};
+	D3D_FEATURE_LEVEL feature_level;
+	for (auto lv : levels) {
+		if (D3D12CreateDevice(nullptr, lv, IID_PPV_ARGS(&_dev)) == S_OK) {
+			feature_level = lv;
+			break;
+		}
+	}
+	auto result = CreateDXGIFactory1(IID_PPV_ARGS(&_dxgiFactory));
+	//アダプタの列挙型
+	std::vector<IDXGIAdapter*>adapters;
+	//ここに特定の名前を持つアダプターオブジェクトが入る
+	IDXGIAdapter* tmpAdapter = nullptr;
+	//利用可能なアダプターを列挙し、列挙されたアダプターをstd::vectorに格納
+	for (int i = 0; _dxgiFactory->EnumAdapters(i, &tmpAdapter) != DXGI_ERROR_NOT_FOUND; ++i) {
+		adapters.push_back(tmpAdapter);
+	}
+	for (auto adpt : adapters) {
+		DXGI_ADAPTER_DESC adesc = {};
+		adpt->GetDesc(&adesc);//アダプターの説明オブジェクト取得
+		std::wstring strDesc = adesc.Description;
+		//探したいアダプターの名前を確認
+		//NVIDIAが含まれているアダプターオブジェクトを見つけてtmpAdapterに格納
+		if (strDesc.find(L"NVIDIA") != std::string::npos) {
+			tmpAdapter = adpt;
+			break;
+		}
+	}
 	w.cbSize = sizeof(WNDCLASSEX);
 	w.lpfnWndProc = (WNDPROC)WindowProcedure;//コールバック関数の指定
 	w.lpszClassName = _T("DX12sample");//アプリケーション名てきとうでいい
