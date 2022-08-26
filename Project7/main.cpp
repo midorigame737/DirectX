@@ -63,6 +63,17 @@ int main() {
 	for (int i = 0; _dxgiFactory->EnumAdapters(i, &tmpAdapter) != DXGI_ERROR_NOT_FOUND; ++i) {
 		adapters.push_back(tmpAdapter);
 	}
+	for (auto adpt : adapters) {
+		DXGI_ADAPTER_DESC adesc = {};
+		adpt->GetDesc(&adesc);//アダプターの説明オブジェクト取得
+		std::wstring strDesc = adesc.Description;
+		//探したいアダプターの名前を確認
+		//NVIDIAが含まれているアダプターオブジェクトを見つけてtmpAdapterに格納
+		if (strDesc.find(L"NVIDIA") != std::string::npos) {
+			tmpAdapter = adpt;
+			break;
+		}
+	}
 	w.cbSize = sizeof(WNDCLASSEX);
 	w.lpfnWndProc = (WNDPROC)WindowProcedure;//コールバック関数の指定
 	w.lpszClassName = _T("DX12sample");//アプリケーション名てきとうでいい
