@@ -40,6 +40,9 @@ int main() {
 	ID3D12Device* _dev = nullptr;
 	IDXGIFactory6* _dxgiFactory = nullptr;
 	IDXGISwapChain4* _swapchain = nullptr;
+	ID3D12CommandAllocator* _cmdAllocator = nullptr;//GPUコマンド用のストレージ割り当て
+	ID3D12GraphicsCommandList* _cmdList = nullptr;//レンダリング用のグラフィックスコマンドのリストのカプセル化
+
 	WNDCLASSEX w = {};
 	D3D_FEATURE_LEVEL levels[] = {
 		D3D_FEATURE_LEVEL_12_1,
@@ -74,6 +77,11 @@ int main() {
 			break;
 		}
 	}
+	//コマンドアロケーター(ID3D12CommandAllocator)の生成
+	result = _dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+										  IID_PPV_ARGS(&_cmdAllocator));
+
+
 	w.cbSize = sizeof(WNDCLASSEX);
 	w.lpfnWndProc = (WNDPROC)WindowProcedure;//コールバック関数の指定
 	w.lpszClassName = _T("DX12sample");//アプリケーション名てきとうでいい
