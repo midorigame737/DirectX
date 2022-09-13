@@ -40,6 +40,10 @@ int main() {
 	ID3D12Device* _dev = nullptr;
 	IDXGIFactory6* _dxgiFactory = nullptr;
 	IDXGISwapChain4* _swapchain = nullptr;
+	ID3D12CommandAllocator* _cmdAllocator = nullptr;//GPUコマンド用のストレージ割り当てとかそこへのインターフェース
+	ID3D12GraphicsCommandList* _cmdList = nullptr;//レンダリング用のグラフィックスコマンドの命令オブジェクト
+	ID3D12CommandQueue* cmdQueue = nullptr;//コマンドリストでためた命令セットを実行していくためのキュー
+
 	WNDCLASSEX w = {};
 	D3D_FEATURE_LEVEL levels[] = {
 		D3D_FEATURE_LEVEL_12_1,
@@ -55,6 +59,7 @@ int main() {
 		}
 	}
 	auto result = CreateDXGIFactory1(IID_PPV_ARGS(&_dxgiFactory));
+	
 	//アダプタの列挙型
 	std::vector<IDXGIAdapter*>adapters;
 	//ここに特定の名前を持つアダプターオブジェクトが入る
@@ -74,6 +79,23 @@ int main() {
 			break;
 		}
 	}
+	//コマンドアロケーター(ID3D12CommandAllocator)の生成
+	result = _dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+										  IID_PPV_ARGS(&_cmdAllocator));
+	result = _dev->CreateCommandList(0,
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
+		_cmdAllocator, nullptr,
+		IID_PPV_ARGS(&_cmdList));
+
+	//コマンドキューの設定
+	D3D12_COMMAND_QUEUE_DESC cmdQueueDesc = {};
+	cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;//タイムアウトなし
+	cmdQueueDesc.NodeMask = 0;
+	cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;//プライオリティ特になし
+	cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;//コマンドリストと合わせる
+	result = _dev->CreateCommandQueue(&cmdQueueDesc,
+		IID_PPV_ARGS(&cmdQueue));//
+
 	w.cbSize = sizeof(WNDCLASSEX);
 	w.lpfnWndProc = (WNDPROC)WindowProcedure;//コールバック関数の指定
 	w.lpszClassName = _T("DX12sample");//アプリケーション名てきとうでいい
