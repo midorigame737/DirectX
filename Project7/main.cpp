@@ -148,7 +148,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	heapDesc.NodeMask = 0;//本来GPuが複数あるときのためのものなので0
 	heapDesc.NumDescriptors = 2;//表と裏だから2つ
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;//ビュー情報にあたつ情報をシェーダ側から参照する必要性があるかどうか、今回は特に指定なし
-	
+	ID3D12DescriptorHeap* rtvHeaps = nullptr;
+	result = _dev->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&rtvHeaps));
 	ShowWindow(hwnd, SW_SHOW);
 	MSG msg = {};
 	while (true) {
