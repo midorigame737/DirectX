@@ -36,6 +36,11 @@ LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 }
 #ifdef _DEBUG
 int main() {
+#else
+#include<Windows.h>
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+{
+#endif
 	//Direct3D基本オブジェクト生成
 	ID3D12Device* _dev = nullptr;
 	IDXGIFactory6* _dxgiFactory = nullptr;
@@ -43,7 +48,6 @@ int main() {
 	ID3D12CommandAllocator* _cmdAllocator = nullptr;//GPUコマンド用のストレージ割り当てとかそこへのインターフェース
 	ID3D12GraphicsCommandList* _cmdList = nullptr;//レンダリング用のグラフィックスコマンドの命令オブジェクト
 	ID3D12CommandQueue* cmdQueue = nullptr;//コマンドリストでためた命令セットを実行していくためのキュー
-
 	WNDCLASSEX w = {};
 	D3D_FEATURE_LEVEL levels[] = {
 		D3D_FEATURE_LEVEL_12_1,
@@ -117,7 +121,7 @@ int main() {
 		w.hInstance,//呼び出しアプリケーションハンドル
 		nullptr);
 
-	DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};//[invest]この構造体よくわからんからあとで調べ解く
+	DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};//レンダリングされたデータを出力する前に格納するためのオブジェクト
 	swapchainDesc.Width = WINDOW_WIDTH;
 	swapchainDesc.Height = WINDOW_HEIGHT;
 	swapchainDesc.Format =DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -156,10 +160,8 @@ int main() {
 		}
 	}
 	UnregisterClass(w.lpszClassName, w.hInstance);//もうクラスを使わないので登録解除
-#else
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
-{
-#endif
+
+
 	DebugOutputFormatString("Show window test.");
 	getchar();
 	return 0;
