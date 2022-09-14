@@ -42,9 +42,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 #endif
 	//Direct3D基本オブジェクト生成
-	ID3D12Device* _dev = nullptr;
-	IDXGIFactory6* _dxgiFactory = nullptr;
-	IDXGISwapChain4* _swapchain = nullptr;
+	ID3D12Device* _dev = nullptr;//コマンドキューとかコマンドリストとか色々作成するためのもの
+	IDXGIFactory6* _dxgiFactory = nullptr;//GPU設定に基づいたグラフィックスアダプタを選択する
+	IDXGISwapChain4* _swapchain = nullptr;//
 	ID3D12CommandAllocator* _cmdAllocator = nullptr;//GPUコマンド用のストレージ割り当てとかそこへのインターフェース
 	ID3D12GraphicsCommandList* _cmdList = nullptr;//レンダリング用のグラフィックスコマンドの命令オブジェクト
 	ID3D12CommandQueue* cmdQueue = nullptr;//コマンドリストでためた命令セットを実行していくためのキュー
@@ -139,6 +139,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	
 
 	result = _dxgiFactory->CreateSwapChainForHwnd(
+		//swapchainの出力ウィンドウのハンドルに関連付けられているswapchain作成
 		cmdQueue,
 		hwnd,
 		&swapchainDesc,
