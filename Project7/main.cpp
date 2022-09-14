@@ -94,28 +94,55 @@ int main() {
 	cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;//プライオリティ特になし
 	cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;//コマンドリストと合わせる
 	result = _dev->CreateCommandQueue(&cmdQueueDesc,
-		IID_PPV_ARGS(&cmdQueue));//
+		IID_PPV_ARGS(&cmdQueue));//コマンドキュー生成
 
 	w.cbSize = sizeof(WNDCLASSEX);
 	w.lpfnWndProc = (WNDPROC)WindowProcedure;//コールバック関数の指定
 	w.lpszClassName = _T("DX12sample");//アプリケーション名てきとうでいい
 	w.hInstance = GetModuleHandle(nullptr);//ハンドルの取得
 	RegisterClassEx(&w);//アプリケーションクラス（ウィンドウの指定をOSに伝える）
-	RECT wrc = { 0,0,WINDOW_WIDTH,WINDOW_HEIGHT};//ウィンドウサイズ決定
+	RECT wrc = { 0,0,WINDOW_WIDTH,WINDOW_HEIGHT };//ウィンドウサイズ決定
 	//関数でウィンドウサイズを補正する
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 	//ウィンドウの生成
 	HWND hwnd = CreateWindow(w.lpszClassName,//クラス名指定
-							_T("DX12テスト"),//タイトルバーの文字
-							WS_OVERLAPPEDWINDOW,//タイトルバーと境界線があるウィンドウ
-							CW_USEDEFAULT,//X座標はOSに任せる
-							CW_USEDEFAULT,//Y座標はOSに任せる
-							wrc.right-wrc.left,//ウィンドウ幅
-							wrc.bottom-wrc.top,//ウィンドウ高
-							nullptr,//親ウィンドウタイトル
-							nullptr,
-							w.hInstance,//呼び出しアプリケーションハンドル
-							nullptr);
+		_T("DX12テスト"),//タイトルバーの文字
+		WS_OVERLAPPEDWINDOW,//タイトルバーと境界線があるウィンドウ
+		CW_USEDEFAULT,//X座標はOSに任せる
+		CW_USEDEFAULT,//Y座標はOSに任せる
+		wrc.right - wrc.left,//ウィンドウ幅
+		wrc.bottom - wrc.top,//ウィンドウ高
+		nullptr,//親ウィンドウタイトル
+		nullptr,
+		w.hInstance,//呼び出しアプリケーションハンドル
+		nullptr);
+
+	DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};//[invest]この構造体よくわからんからあとで調べ解く
+	swapchainDesc.Width = WINDOW_WIDTH;
+	swapchainDesc.Height = WINDOW_HEIGHT;
+	swapchainDesc.Format =DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapchainDesc.Stereo = false;
+	swapchainDesc.SampleDesc.Count = 1;
+	swapchainDesc.SampleDesc.Quality = 0;
+	swapchainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER;
+	swapchainDesc.BufferCount = 2;//バックバッファは伸び縮み可能
+	swapchainDesc.Scaling = DXGI_SCALING_STRETCH;//フリップ後は速やかに破棄
+	swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	//特に指定なし
+	swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;//ウィンドウフルスクリーン切り替え可能
+	swapchainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+	
+
+	result = _dxgiFactory->CreateSwapChainForHwnd(
+		cmdQueue,
+		hwnd,
+		&swapchainDesc,
+		nullptr,
+		nullptr,
+		(IDXGISwapChain1**)&_swapchain);
+
+	
 	ShowWindow(hwnd, SW_SHOW);
 	MSG msg = {};
 	while (true) {
