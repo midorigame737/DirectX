@@ -150,6 +150,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;//ビュー情報にあたつ情報をシェーダ側から参照する必要性があるかどうか、今回は特に指定なし
 	ID3D12DescriptorHeap* rtvHeaps = nullptr;
 	result = _dev->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&rtvHeaps));
+	DXGI_SWAP_CHAIN_DESC swcDesc = {};//
+	result = _swapchain->GetDesc(&swcDesc);//[investigate]
+	std::vector<ID3D12Resource*>_backBuffers(swcDesc.BufferCount);
+	for (int idx = 0; idx < swcDesc.BufferCount; ++idx) {//バックバッファの数だけ設定が必要なのでループ
+
+	}
 	ShowWindow(hwnd, SW_SHOW);
 	MSG msg = {};
 	while (true) {
