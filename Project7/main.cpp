@@ -135,9 +135,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//特に指定なし
 	swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;//ウィンドウフルスクリーン切り替え可能
 	swapchainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-
-	
-
 	result = _dxgiFactory->CreateSwapChainForHwnd(
 		//swapchainの出力ウィンドウのハンドルに関連付けられているswapchain作成
 		cmdQueue,
@@ -146,8 +143,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		nullptr,
 		nullptr,
 		(IDXGISwapChain1**)&_swapchain);
-
-	
+	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};//ディスクリプタヒープ（ディスクリプタの内容を格納しておくところ）を作るための設定を書くためのオブジェクト
+	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;//バッファの用途を教えてあげるところ、レンダターゲットだからRTV
+	heapDesc.NodeMask = 0;//本来GPuが複数あるときのためのものなので0
+	heapDesc.NumDescriptors = 2;//表と裏だから2つ
+	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;//ビュー情報にあたつ情報をシェーダ側から参照する必要性があるかどうか、今回は特に指定なし
+	ID3D12DescriptorHeap* rtvHeaps = nullptr;
+	result = _dev->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&rtvHeaps));
+	DXGI_SWAP_CHAIN_DESC swcDesc = {};//
+	result = _swapchain->GetDesc(&swcDesc);//[investigate]
+	std::vector<ID3D12Resource*>_backBuffers(swcDesc.BufferCount);
+	for (int idx = 0; idx < swcDesc.BufferCount; ++idx) {//バックバッファの数だけ設定が必要なのでループ
+		result = _swapchain->GetBuffer(idx, IID_PPV_ARGS(&_backBuffers[idx]));//[investigate]
+		D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
+		handle.ptr += idx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		_dev->CreateRenderTargetView(_backBuffers[idx], nullptr, handle);
+	}
 	ShowWindow(hwnd, SW_SHOW);
 	MSG msg = {};
 	while (true) {
