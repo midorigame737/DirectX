@@ -154,11 +154,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	result = _swapchain->GetDesc(&swcDesc);//[investigate]
 	std::vector<ID3D12Resource*>_backBuffers(swcDesc.BufferCount);
 	for (int idx = 0; idx < swcDesc.BufferCount; ++idx) {//バックバッファの数だけ設定が必要なのでループ
-		result = _swapchain->GetBuffer(idx, IID_PPV_ARGS(&_backBuffers[idx]));//[investigate]
-		D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
+		result = _swapchain->GetBuffer(idx, IID_PPV_ARGS(&_backBuffers[idx]));//スワップチェーン上のバックバッファ取得
+		D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();//[invistigate]
 		handle.ptr += idx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		_dev->CreateRenderTargetView(_backBuffers[idx], nullptr, handle);
 	}
+	
 	ShowWindow(hwnd, SW_SHOW);
 	MSG msg = {};
 	while (true) {
@@ -171,6 +172,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			break;
 		}
 	}
+	result = _cmdAllocator->Reset();//[invistigate]
 	UnregisterClass(w.lpszClassName, w.hInstance);//もうクラスを使わないので登録解除
 
 
