@@ -172,10 +172,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			break;
 		}
 	}
+	auto bbIdx = _swapchain->GetCurrentBackBufferIndex();//[invistigate]
 	result = _cmdAllocator->Reset();//[invistigate]
+	auto bbIdx = _swapchain->GetCurrentBackBufferIndex();//[invistigate]
+	auto rtvH = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
+	rtvH.ptr += bbIdx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	_cmdList->OMSetRenderTargets(1, &rtvH, true, nullptr);
 	UnregisterClass(w.lpszClassName, w.hInstance);//‚à‚¤ƒNƒ‰ƒX‚ğg‚í‚È‚¢‚Ì‚Å“o˜^‰ğœ
-
-
 	DebugOutputFormatString("Show window test.");
 	getchar();
 	return 0;
