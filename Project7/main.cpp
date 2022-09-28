@@ -179,6 +179,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	rtvH.ptr += bbIdx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	_cmdList->OMSetRenderTargets(1, &rtvH, true, nullptr);
 	UnregisterClass(w.lpszClassName, w.hInstance);//もうクラスを使わないので登録解除
+	float clearColor[] = { 1.0f,1.0f,0.0f,1.0f };//黄色で画面クリア
+	_cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
+	//命令のクローズ
+	_cmdList->Close();
+	ID3D12CommandList* cmdlists[] = { _cmdList };
+	cmdQueue->ExecuteCommandLists(1, cmdlists);
 	DebugOutputFormatString("Show window test.");
 	getchar();
 	return 0;
