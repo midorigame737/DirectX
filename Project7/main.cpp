@@ -174,7 +174,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	}
 	auto bbIdx = _swapchain->GetCurrentBackBufferIndex();//[invistigate]
 	result = _cmdAllocator->Reset();//[invistigate]
-	auto bbIdx = _swapchain->GetCurrentBackBufferIndex();//[invistigate]
+	
 	auto rtvH = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
 	rtvH.ptr += bbIdx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	_cmdList->OMSetRenderTargets(1, &rtvH, true, nullptr);
@@ -185,6 +185,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	_cmdList->Close();
 	ID3D12CommandList* cmdlists[] = { _cmdList };
 	cmdQueue->ExecuteCommandLists(1, cmdlists);
+	_cmdAllocator->Reset();
+	_cmdList->Reset(_cmdAllocator,nullptr );//再びコマンドリストをためる準備
+	//フリップ
+	_swapchain->Present(1, 0);
 	DebugOutputFormatString("Show window test.");
 	getchar();
 	return 0;
