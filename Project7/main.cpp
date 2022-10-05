@@ -154,11 +154,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	result = _swapchain->GetDesc(&swcDesc);//[investigate]
 	std::vector<ID3D12Resource*>_backBuffers(swcDesc.BufferCount);
 	for (int idx = 0; idx < swcDesc.BufferCount; ++idx) {//バックバッファの数だけ設定が必要なのでループ
-		result = _swapchain->GetBuffer(idx, IID_PPV_ARGS(&_backBuffers[idx]));//[investigate]
-		D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
+		result = _swapchain->GetBuffer(idx, IID_PPV_ARGS(&_backBuffers[idx]));//スワップチェーン上のバックバッファ取得
+		D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();//[invistigate]
 		handle.ptr += idx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		_dev->CreateRenderTargetView(_backBuffers[idx], nullptr, handle);
 	}
+	
 	ShowWindow(hwnd, SW_SHOW);
 	MSG msg = {};
 	while (true) {
@@ -171,9 +172,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			break;
 		}
 	}
+	auto bbIdx = _swapchain->GetCurrentBackBufferIndex();//[invistigate]
+	result = _cmdAllocator->Reset();//[invistigate]
+	
+	auto rtvH = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
+	rtvH.ptr += bbIdx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	_cmdList->OMSetRenderTargets(1, &rtvH, true, nullptr);
 	UnregisterClass(w.lpszClassName, w.hInstance);//もうクラスを使わないので登録解除
-
-
+	float clearColor[] = { 1.0f,1.0f,0.0f,1.0f };//黄色で画面クリア
+	_cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
+	//命令のクローズ
+	_cmdList->Close();
+	ID3D12CommandList* cmdlists[] = { _cmdList };
+	cmdQueue->ExecuteCommandLists(1, cmdlists);
+	_cmdAllocator->Reset();
+	_cmdList->Reset(_cmdAllocator,nullptr );//再びコマンドリストをためる準備
+	//フリップ
+	_swapchain->Present(1, 0);
 	DebugOutputFormatString("Show window test.");
 	getchar();
 	return 0;
