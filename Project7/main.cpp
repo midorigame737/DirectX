@@ -25,6 +25,13 @@ void DebugOutputFormatString(const char* format, ...)
 		va_end(valist);
 	#endif
 }
+void EnableDebugLayer() {
+	ID3D12Debug* debugLayer = nullptr;
+	auto result = D3D12GetDebugInterface(
+		IID_PPV_ARGS(&debugLayer));
+	debugLayer->EnableDebugLayer();//デバッグレイヤー有効化
+	debugLayer->Release();//有効化したらインターフェースを開放する
+}
 
 LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	//ウィンドウが破棄されたら呼ばれる
