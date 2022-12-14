@@ -19,6 +19,7 @@ using namespace std;
 void DebugOutputFormatString(const char* format, ...)
 {
 	#ifdef _DEBUG
+	
 		va_list valist;//可変長引数格納するところ
 		va_start(valist, format);//可変長引数リストへのアクセス,va_startの第二引数は最後の固定引数
 		printf(format, valist);
@@ -30,6 +31,7 @@ void EnableDebugLayer() {
 	auto result = D3D12GetDebugInterface(
 		IID_PPV_ARGS(&debugLayer));
 	debugLayer->EnableDebugLayer();//デバッグレイヤー有効化
+	//後で調べる
 	debugLayer->Release();//有効化したらインターフェースを開放する
 }
 
@@ -48,6 +50,7 @@ int main() {
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 #endif
+
 	//Direct3D基本オブジェクト生成
 	ID3D12Device* _dev = nullptr;//コマンドキューとかコマンドリストとか色々作成するためのもの
 	IDXGIFactory6* _dxgiFactory = nullptr;//GPU設定に基づいたグラフィックスアダプタを選択する
@@ -56,6 +59,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	ID3D12GraphicsCommandList* _cmdList = nullptr;//レンダリング用のグラフィックスコマンドの命令オブジェクト
 	ID3D12CommandQueue* cmdQueue = nullptr;//コマンドリストでためた命令セットを実行していくためのキュー
 	WNDCLASSEX w = {};
+#ifdef _DEBUG
+	CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&_dxgiFactory));
+#else
+	CreateDXGIFactory1(IID_PPV_ARGS(&_dxgiFactory));
+#endif
+	EnableDebugLayer();
 	D3D_FEATURE_LEVEL levels[] = {
 		D3D_FEATURE_LEVEL_12_1,
 		D3D_FEATURE_LEVEL_12_0,
@@ -97,7 +106,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
 		_cmdAllocator, nullptr,
 		IID_PPV_ARGS(&_cmdList));
-
+	ID3D12Fence* _fence = nullptr;
+	UINT64 _fenceVal = 0;
+	result = _dev->CreateFence(//フェンス作る、よくわからんからあとでリファレンス見る
+		_fenceVal,
+		D3D12_FENCE_FLAG_NONE,
+		IID_PPV_ARGS(&_fence));
 	//コマンドキューの設定
 	D3D12_COMMAND_QUEUE_DESC cmdQueueDesc = {};
 	cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;//タイムアウトなし
