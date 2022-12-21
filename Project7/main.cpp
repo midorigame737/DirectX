@@ -106,12 +106,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
 		_cmdAllocator, nullptr,
 		IID_PPV_ARGS(&_cmdList));
-	ID3D12Fence* _fence = nullptr;
-	UINT64 _fenceVal = 0;
-	result = _dev->CreateFence(//フェンス作る、よくわからんからあとでリファレンス見る
-		_fenceVal,
-		D3D12_FENCE_FLAG_NONE,
-		IID_PPV_ARGS(&_fence));
+	
 	//コマンドキューの設定
 	D3D12_COMMAND_QUEUE_DESC cmdQueueDesc = {};
 	cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;//タイムアウトなし
@@ -180,7 +175,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		handle.ptr += idx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		_dev->CreateRenderTargetView(_backBuffers[idx], nullptr, handle);
 	}
-	
+	ID3D12Fence* _fence = nullptr;
+	UINT64 _fenceVal = 0;
+	result = _dev->CreateFence(//フェンス作る、よくわからんからあとでリファレンス見る
+		_fenceVal,
+		D3D12_FENCE_FLAG_NONE,
+		IID_PPV_ARGS(&_fence));
 	ShowWindow(hwnd, SW_SHOW);
 	MSG msg = {};
 	while (true) {
@@ -206,6 +206,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	_cmdList->Close();
 	ID3D12CommandList* cmdlists[] = { _cmdList };
 	cmdQueue->ExecuteCommandLists(1, cmdlists);
+	if (_fence->GetCompletedValue() != _fenceVal) {
+		//多分GPUの諸々イベントハンドル取得してるけど
+		//よくわからんから後で調べる
+		auto event = CreateEvent(nullptr, false, false, nullptr);
+		_fence->SetEventOnCompletion(_fenceVal, event);//イベントが発生するまで待ち続ける
+		WaitForSingleObject(event, INFINITE);
+		//イベントハンドルを閉じる
+		CloseHandle(event);
+	}
 	_cmdAllocator->Reset();
 	_cmdList->Reset(_cmdAllocator,nullptr );//再びコマンドリストをためる準備
 	//フリップ
