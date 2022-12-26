@@ -181,6 +181,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		_fenceVal,
 		D3D12_FENCE_FLAG_NONE,
 		IID_PPV_ARGS(&_fence));
+	auto bbIdx = _swapchain->GetCurrentBackBufferIndex();//[invistigate]
+
+	D3D12_RESOURCE_BARRIER BarrierDesc = {};//このあたりよくわからんから後でしらべる
+	BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;//遷移
+	BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	BarrierDesc.Transition.pResource = _backBuffers[bbIdx];
+	BarrierDesc.Transition.Subresource = 0;
+	BarrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;//直前はPRESENT状態
+	BarrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;//今からレンダターゲット状態
+	_cmdList->ResourceBarrier(1, &BarrierDesc);//バリア指定実行
+
 	ShowWindow(hwnd, SW_SHOW);
 	MSG msg = {};
 	while (true) {
@@ -193,7 +204,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			break;
 		}
 	}
-	auto bbIdx = _swapchain->GetCurrentBackBufferIndex();//[invistigate]
+	
 	result = _cmdAllocator->Reset();//[invistigate]
 	
 	auto rtvH = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
