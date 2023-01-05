@@ -206,11 +206,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	}
 	
 	result = _cmdAllocator->Reset();//[invistigate]
-	
+
+	BarrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	BarrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	_cmdList->ResourceBarrier(1, &BarrierDesc);
+
 	auto rtvH = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
 	rtvH.ptr += bbIdx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	_cmdList->OMSetRenderTargets(1, &rtvH, true, nullptr);
-	UnregisterClass(w.lpszClassName, w.hInstance);//もうクラスを使わないので登録解除
+	
 	float clearColor[] = { 1.0f,1.0f,0.0f,1.0f };//黄色で画面クリア
 	_cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
 	//命令のクローズ
@@ -225,13 +229,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		WaitForSingleObject(event, INFINITE);
 		//イベントハンドルを閉じる
 		CloseHandle(event);
+
+		_cmdAllocator->Reset();
+		_cmdList->Reset(_cmdAllocator, nullptr);//再びコマンドリストをためる準備
+		//フリップ
+		_swapchain->Present(1, 0);
 	}
-	_cmdAllocator->Reset();
-	_cmdList->Reset(_cmdAllocator,nullptr );//再びコマンドリストをためる準備
-	//フリップ
-	_swapchain->Present(1, 0);
+	UnregisterClass(w.lpszClassName, w.hInstance);//もうクラスを使わないので登録解除
 	DebugOutputFormatString("Show window test.");
 	getchar();
+
 	return 0;
 }
 
