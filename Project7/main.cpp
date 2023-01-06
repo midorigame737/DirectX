@@ -57,14 +57,36 @@ int main() {
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 #endif
-
+	DebugOutputFormatString("Show window test.");
 	
 	WNDCLASSEX w = {};
+	w.cbSize = sizeof(WNDCLASSEX);
+	w.lpfnWndProc = (WNDPROC)WindowProcedure;//コールバック関数の指定
+	w.lpszClassName = _T("DX12sample");//アプリケーション名てきとうでいい
+	w.hInstance = GetModuleHandle(nullptr);//ハンドルの取得
+	RegisterClassEx(&w);//アプリケーションクラス（ウィンドウの指定をOSに伝える）
+	RECT wrc = { 0,0,WINDOW_WIDTH,WINDOW_HEIGHT };//ウィンドウサイズ決定
+	//関数でウィンドウサイズを補正する
+	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
+	//ウィンドウの生成
+	HWND hwnd = CreateWindow(w.lpszClassName,//クラス名指定
+		_T("DX12テスト"),//タイトルバーの文字
+		WS_OVERLAPPEDWINDOW,//タイトルバーと境界線があるウィンドウ
+		CW_USEDEFAULT,//X座標はOSに任せる
+		CW_USEDEFAULT,//Y座標はOSに任せる
+		wrc.right - wrc.left,//ウィンドウ幅
+		wrc.bottom - wrc.top,//ウィンドウ高
+		nullptr,//親ウィンドウタイトル
+		nullptr,
+		w.hInstance,//呼び出しアプリケーションハンドル
+		nullptr);
+
 #ifdef _DEBUG
 	CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&_dxgiFactory));
 #else
 	CreateDXGIFactory1(IID_PPV_ARGS(&_dxgiFactory));
 #endif
+	
 	EnableDebugLayer();
 	D3D_FEATURE_LEVEL levels[] = {
 		D3D_FEATURE_LEVEL_12_1,
@@ -117,26 +139,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	result = _dev->CreateCommandQueue(&cmdQueueDesc,
 		IID_PPV_ARGS(&cmdQueue));//コマンドキュー生成
 
-	w.cbSize = sizeof(WNDCLASSEX);
-	w.lpfnWndProc = (WNDPROC)WindowProcedure;//コールバック関数の指定
-	w.lpszClassName = _T("DX12sample");//アプリケーション名てきとうでいい
-	w.hInstance = GetModuleHandle(nullptr);//ハンドルの取得
-	RegisterClassEx(&w);//アプリケーションクラス（ウィンドウの指定をOSに伝える）
-	RECT wrc = { 0,0,WINDOW_WIDTH,WINDOW_HEIGHT };//ウィンドウサイズ決定
-	//関数でウィンドウサイズを補正する
-	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
-	//ウィンドウの生成
-	HWND hwnd = CreateWindow(w.lpszClassName,//クラス名指定
-		_T("DX12テスト"),//タイトルバーの文字
-		WS_OVERLAPPEDWINDOW,//タイトルバーと境界線があるウィンドウ
-		CW_USEDEFAULT,//X座標はOSに任せる
-		CW_USEDEFAULT,//Y座標はOSに任せる
-		wrc.right - wrc.left,//ウィンドウ幅
-		wrc.bottom - wrc.top,//ウィンドウ高
-		nullptr,//親ウィンドウタイトル
-		nullptr,
-		w.hInstance,//呼び出しアプリケーションハンドル
-		nullptr);
+	
 
 	DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};//レンダリングされたデータを出力する前に格納するためのオブジェクト
 	swapchainDesc.Width = WINDOW_WIDTH;
@@ -230,14 +233,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		WaitForSingleObject(event, INFINITE);
 		//イベントハンドルを閉じる
 		CloseHandle(event);
-
+		////待ち
+		cmdQueue->Signal(_fence, ++_fenceVal);
 		_cmdAllocator->Reset();
 		_cmdList->Reset(_cmdAllocator, nullptr);//再びコマンドリストをためる準備
 		//フリップ
 		_swapchain->Present(1, 0);
 	}
 	UnregisterClass(w.lpszClassName, w.hInstance);//もうクラスを使わないので登録解除
-	DebugOutputFormatString("Show window test.");
+	
 	getchar();
 
 	return 0;
