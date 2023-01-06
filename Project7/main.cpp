@@ -2,6 +2,7 @@
 #include<vector>
 #ifdef _DEBUG 
 #include<iostream>
+#endif
 #include <tchar.h>
 #include<d3d12.h>
 #include<dxgi1_6.h>
@@ -9,7 +10,6 @@
 #define WINDOW_HEIGHT 720
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
-#endif
 
 using namespace std;
 //@brief コンソール画面にフォーマット付き文字列を表示
@@ -43,6 +43,13 @@ LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	}
 	return DefWindowProc(hwnd, msg, wparam, lparam);//基底の処理
 }
+//Direct3D基本オブジェクト生成
+ID3D12Device* _dev = nullptr;//コマンドキューとかコマンドリストとか色々作成するためのもの
+IDXGIFactory6* _dxgiFactory = nullptr;//GPU設定に基づいたグラフィックスアダプタを選択する
+IDXGISwapChain4* _swapchain = nullptr;//
+ID3D12CommandAllocator* _cmdAllocator = nullptr;//GPUコマンド用のストレージ割り当てとかそこへのインターフェース
+ID3D12GraphicsCommandList* _cmdList = nullptr;//レンダリング用のグラフィックスコマンドの命令オブジェクト
+ID3D12CommandQueue* cmdQueue = nullptr;//コマンドリストでためた命令セットを実行していくためのキュー
 #ifdef _DEBUG
 int main() {
 #else
@@ -51,13 +58,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 #endif
 
-	//Direct3D基本オブジェクト生成
-	ID3D12Device* _dev = nullptr;//コマンドキューとかコマンドリストとか色々作成するためのもの
-	IDXGIFactory6* _dxgiFactory = nullptr;//GPU設定に基づいたグラフィックスアダプタを選択する
-	IDXGISwapChain4* _swapchain = nullptr;//
-	ID3D12CommandAllocator* _cmdAllocator = nullptr;//GPUコマンド用のストレージ割り当てとかそこへのインターフェース
-	ID3D12GraphicsCommandList* _cmdList = nullptr;//レンダリング用のグラフィックスコマンドの命令オブジェクト
-	ID3D12CommandQueue* cmdQueue = nullptr;//コマンドリストでためた命令セットを実行していくためのキュー
+	
 	WNDCLASSEX w = {};
 #ifdef _DEBUG
 	CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&_dxgiFactory));
