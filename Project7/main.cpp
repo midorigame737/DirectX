@@ -58,7 +58,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 #endif
 	DebugOutputFormatString("Show window test.");
-	
+	HINSTANCE hInst = GetModuleHandle(nullptr);
 	WNDCLASSEX w = {};
 	w.cbSize = sizeof(WNDCLASSEX);
 	w.lpfnWndProc = (WNDPROC)WindowProcedure;//コールバック関数の指定
@@ -82,6 +82,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		nullptr);
 
 #ifdef _DEBUG
+	//デバッグレイヤー有効化
+	//デバイス生成前にやっておかないとデバイスがロスするらしい
 	CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&_dxgiFactory));
 #else
 	CreateDXGIFactory1(IID_PPV_ARGS(&_dxgiFactory));
