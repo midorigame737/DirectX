@@ -183,9 +183,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	DXGI_SWAP_CHAIN_DESC swcDesc = {};//
 	result = _swapchain->GetDesc(&swcDesc);//[investigate]
 	std::vector<ID3D12Resource*>_backBuffers(swcDesc.BufferCount);
-	for (int idx = 0; idx < swcDesc.BufferCount; ++idx) {//バックバッファの数だけ設定が必要なのでループ
+	D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();//[invistigate]
+	for (size_t idx = 0; idx < swcDesc.BufferCount; ++idx) {//バックバッファの数だけ設定が必要なのでループ
 		result = _swapchain->GetBuffer(idx, IID_PPV_ARGS(&_backBuffers[idx]));//スワップチェーン上のバックバッファ取得
-		D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();//[invistigate]
 		handle.ptr += idx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		_dev->CreateRenderTargetView(_backBuffers[idx], nullptr, handle);
 	}
@@ -195,19 +195,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		_fenceVal,
 		D3D12_FENCE_FLAG_NONE,
 		IID_PPV_ARGS(&_fence));
-	auto bbIdx = _swapchain->GetCurrentBackBufferIndex();//[invistigate]
-
-	D3D12_RESOURCE_BARRIER BarrierDesc = {};//このあたりよくわからんから後でしらべる
-	BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;//遷移
-	BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	BarrierDesc.Transition.pResource = _backBuffers[bbIdx];
-	BarrierDesc.Transition.Subresource = 0;
-	BarrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;//直前はPRESENT状態
-	BarrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;//今からレンダターゲット状態
-	_cmdList->ResourceBarrier(1, &BarrierDesc);//バリア指定実行
-
 	ShowWindow(hwnd, SW_SHOW);
 	MSG msg = {};
+	
+
+	
+	
+	
 	while (true) {
 		if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
@@ -217,24 +211,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		if (msg.message == WM_QUIT) {
 			break;
 		}
-
+		auto bbIdx = _swapchain->GetCurrentBackBufferIndex();//[invistigate]
+		D3D12_RESOURCE_BARRIER BarrierDesc = {};//このあたりよくわからんから後でしらべる
+		BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;//遷移
+		BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		BarrierDesc.Transition.pResource = _backBuffers[bbIdx];
+		BarrierDesc.Transition.Subresource = 0;
+		BarrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;//直前はPRESENT状態
+		BarrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;//今からレンダターゲット状態
+		_cmdList->ResourceBarrier(1, &BarrierDesc);//バリア指定実行
 
 		result = _cmdAllocator->Reset();//[invistigate]
+
+		
+		_cmdList->ResourceBarrier(1, &BarrierDesc);
+		//レンダターゲット指定
+		auto rtvH = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
+		rtvH.ptr +=  static_cast<ULONG_PTR>(bbIdx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
+		_cmdList->OMSetRenderTargets(1, &rtvH, false, nullptr);
+
+		float clearColor[] = { 1.0f,1.0f,0.0f,1.0f };//黄色で画面クリア
+		_cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
 
 		BarrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		BarrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 		_cmdList->ResourceBarrier(1, &BarrierDesc);
-
-		auto rtvH = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
-		rtvH.ptr += bbIdx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		_cmdList->OMSetRenderTargets(1, &rtvH, true, nullptr);
-
-		float clearColor[] = { 1.0f,1.0f,0.0f,1.0f };//黄色で画面クリア
-		_cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
 		//命令のクローズ
 		_cmdList->Close();
+
 		ID3D12CommandList* cmdlists[] = { _cmdList };
 		cmdQueue->ExecuteCommandLists(1, cmdlists);
+		////待ち
+		cmdQueue->Signal(_fence, ++_fenceVal);
 		if (_fence->GetCompletedValue() != _fenceVal) {
 			//多分GPUの諸々イベントハンドル取得してるけど
 			//よくわからんから後で調べる
@@ -243,13 +251,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			WaitForSingleObject(event, INFINITE);
 			//イベントハンドルを閉じる
 			CloseHandle(event);
-			////待ち
-			cmdQueue->Signal(_fence, ++_fenceVal);
-			_cmdAllocator->Reset();
-			_cmdList->Reset(_cmdAllocator, nullptr);//再びコマンドリストをためる準備
-			//フリップ
-			_swapchain->Present(1, 0);
+			
+			
 		}
+		_cmdAllocator->Reset();
+		_cmdList->Reset(_cmdAllocator, nullptr);//再びコマンドリストをためる準備
+		
+		//フリップ
+		_swapchain->Present(1, 0);
 	}
 	UnregisterClass(w.lpszClassName, w.hInstance);//もうクラスを使わないので登録解除
 	
