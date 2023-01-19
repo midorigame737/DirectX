@@ -1,7 +1,8 @@
-#include<Windows.h>
+ï»¿#include<Windows.h>
 #include<vector>
 #ifdef _DEBUG 
 #include<iostream>
+#endif
 #include <tchar.h>
 #include<d3d12.h>
 #include<dxgi1_6.h>
@@ -9,31 +10,46 @@
 #define WINDOW_HEIGHT 720
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
-#endif
 
 using namespace std;
-//@brief ƒRƒ“ƒ\[ƒ‹‰æ–Ê‚ÉƒtƒH[ƒ}ƒbƒg•t‚«•¶š—ñ‚ğ•\¦
-//@param format(%d‚Æ‚©%f‚Æ‚©‚Ì)
-//@param ‰Â•Ï’·ˆø”
-//@remarks ‚±‚ÌŠÖ”‚ÍƒfƒoƒbƒO—p ƒfƒoƒbƒO‚É‚µ‚©“®‚©‚È‚¢
+//@brief ã‚³ãƒ³ã‚½ãƒ¼ãƒ«ç”»é¢ã«ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆä»˜ãæ–‡å­—åˆ—ã‚’è¡¨ç¤º
+//@param format(%dã¨ã‹%fã¨ã‹ã®)
+//@param å¯å¤‰é•·å¼•æ•°
+//@remarks ã“ã®é–¢æ•°ã¯ãƒ‡ãƒãƒƒã‚°ç”¨ ãƒ‡ãƒãƒƒã‚°æ™‚ã«ã—ã‹å‹•ã‹ãªã„
 void DebugOutputFormatString(const char* format, ...)
 {
 	#ifdef _DEBUG
-		va_list valist;//‰Â•Ï’·ˆø”Ši”[‚·‚é‚Æ‚±‚ë
-		va_start(valist, format);//‰Â•Ï’·ˆø”ƒŠƒXƒg‚Ö‚ÌƒAƒNƒZƒX,va_start‚Ì‘æ“ñˆø”‚ÍÅŒã‚ÌŒÅ’èˆø”
+	
+		va_list valist;//å¯å¤‰é•·å¼•æ•°æ ¼ç´ã™ã‚‹ã¨ã“ã‚
+		va_start(valist, format);//å¯å¤‰é•·å¼•æ•°ãƒªã‚¹ãƒˆã¸ã®ã‚¢ã‚¯ã‚»ã‚¹,va_startã®ç¬¬äºŒå¼•æ•°ã¯æœ€å¾Œã®å›ºå®šå¼•æ•°
 		printf(format, valist);
 		va_end(valist);
 	#endif
 }
+void EnableDebugLayer() {
+	ID3D12Debug* debugLayer = nullptr;
+	auto result = D3D12GetDebugInterface(
+		IID_PPV_ARGS(&debugLayer));
+	debugLayer->EnableDebugLayer();//ãƒ‡ãƒãƒƒã‚°ãƒ¬ã‚¤ãƒ¤ãƒ¼æœ‰åŠ¹åŒ–
+	//å¾Œã§èª¿ã¹ã‚‹
+	debugLayer->Release();//æœ‰åŠ¹åŒ–ã—ãŸã‚‰ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹ã‚’é–‹æ”¾ã™ã‚‹
+}
 
 LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-	//ƒEƒBƒ“ƒhƒE‚ª”jŠü‚³‚ê‚½‚çŒÄ‚Î‚ê‚é
+	//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãŒç ´æ£„ã•ã‚ŒãŸã‚‰å‘¼ã°ã‚Œã‚‹
 	if (msg == WM_DESTROY) {
-		PostQuitMessage(0);//OS‚É‘Î‚µ‚ÄƒAƒvƒŠ‚ÌI—¹‚ğ’m‚ç‚¹‚é
+		PostQuitMessage(0);//OSã«å¯¾ã—ã¦ã‚¢ãƒ—ãƒªã®çµ‚äº†ã‚’çŸ¥ã‚‰ã›ã‚‹
 		return 0;
 	}
-	return DefWindowProc(hwnd, msg, wparam, lparam);//Šî’ê‚Ìˆ—
+	return DefWindowProc(hwnd, msg, wparam, lparam);//åŸºåº•ã®å‡¦ç†
 }
+//Direct3DåŸºæœ¬ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆç”Ÿæˆ
+ID3D12Device* _dev = nullptr;//ã‚³ãƒãƒ³ãƒ‰ã‚­ãƒ¥ãƒ¼ã¨ã‹ã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆã¨ã‹è‰²ã€…ä½œæˆã™ã‚‹ãŸã‚ã®ã‚‚ã®
+IDXGIFactory6* _dxgiFactory = nullptr;//GPUè¨­å®šã«åŸºã¥ã„ãŸã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ã‚¹ã‚¢ãƒ€ãƒ—ã‚¿ã‚’é¸æŠã™ã‚‹
+IDXGISwapChain4* _swapchain = nullptr;//
+ID3D12CommandAllocator* _cmdAllocator = nullptr;//GPUã‚³ãƒãƒ³ãƒ‰ç”¨ã®ã‚¹ãƒˆãƒ¬ãƒ¼ã‚¸å‰²ã‚Šå½“ã¦ã¨ã‹ãã“ã¸ã®ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹
+ID3D12GraphicsCommandList* _cmdList = nullptr;//ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ç”¨ã®ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ã‚¹ã‚³ãƒãƒ³ãƒ‰ã®å‘½ä»¤ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+ID3D12CommandQueue* cmdQueue = nullptr;//ã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆã§ãŸã‚ãŸå‘½ä»¤ã‚»ãƒƒãƒˆã‚’å®Ÿè¡Œã—ã¦ã„ããŸã‚ã®ã‚­ãƒ¥ãƒ¼
 #ifdef _DEBUG
 int main() {
 #else
@@ -41,20 +57,52 @@ int main() {
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 #endif
-	//Direct3DŠî–{ƒIƒuƒWƒFƒNƒg¶¬
-	ID3D12Device* _dev = nullptr;//ƒRƒ}ƒ“ƒhƒLƒ…[‚Æ‚©ƒRƒ}ƒ“ƒhƒŠƒXƒg‚Æ‚©FXì¬‚·‚é‚½‚ß‚Ì‚à‚Ì
-	IDXGIFactory6* _dxgiFactory = nullptr;//GPUİ’è‚ÉŠî‚Ã‚¢‚½ƒOƒ‰ƒtƒBƒbƒNƒXƒAƒ_ƒvƒ^‚ğ‘I‘ğ‚·‚é
-	IDXGISwapChain4* _swapchain = nullptr;//
-	ID3D12CommandAllocator* _cmdAllocator = nullptr;//GPUƒRƒ}ƒ“ƒh—p‚ÌƒXƒgƒŒ[ƒWŠ„‚è“–‚Ä‚Æ‚©‚»‚±‚Ö‚ÌƒCƒ“ƒ^[ƒtƒF[ƒX
-	ID3D12GraphicsCommandList* _cmdList = nullptr;//ƒŒƒ“ƒ_ƒŠƒ“ƒO—p‚ÌƒOƒ‰ƒtƒBƒbƒNƒXƒRƒ}ƒ“ƒh‚Ì–½—ßƒIƒuƒWƒFƒNƒg
-	ID3D12CommandQueue* cmdQueue = nullptr;//ƒRƒ}ƒ“ƒhƒŠƒXƒg‚Å‚½‚ß‚½–½—ßƒZƒbƒg‚ğÀs‚µ‚Ä‚¢‚­‚½‚ß‚ÌƒLƒ…[
+	DebugOutputFormatString("Show window test.");
+	HINSTANCE hInst = GetModuleHandle(nullptr);
 	WNDCLASSEX w = {};
+	w.cbSize = sizeof(WNDCLASSEX);
+	w.lpfnWndProc = (WNDPROC)WindowProcedure;//ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯é–¢æ•°ã®æŒ‡å®š
+	w.lpszClassName = _T("DX12sample");//ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³åã¦ãã¨ã†ã§ã„ã„
+	w.hInstance = GetModuleHandle(nullptr);//ãƒãƒ³ãƒ‰ãƒ«ã®å–å¾—
+	RegisterClassEx(&w);//ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã‚¯ãƒ©ã‚¹ï¼ˆã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®æŒ‡å®šã‚’OSã«ä¼ãˆã‚‹ï¼‰
+	RECT wrc = { 0,0,WINDOW_WIDTH,WINDOW_HEIGHT };//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚ºæ±ºå®š
+	//é–¢æ•°ã§ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚ºã‚’è£œæ­£ã™ã‚‹
+	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
+	//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ç”Ÿæˆ
+	HWND hwnd = CreateWindow(w.lpszClassName,//ã‚¯ãƒ©ã‚¹åæŒ‡å®š
+		_T("DX12ãƒ†ã‚¹ãƒˆ"),//ã‚¿ã‚¤ãƒˆãƒ«ãƒãƒ¼ã®æ–‡å­—
+		WS_OVERLAPPEDWINDOW,//ã‚¿ã‚¤ãƒˆãƒ«ãƒãƒ¼ã¨å¢ƒç•Œç·šãŒã‚ã‚‹ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦
+		CW_USEDEFAULT,//Xåº§æ¨™ã¯OSã«ä»»ã›ã‚‹
+		CW_USEDEFAULT,//Yåº§æ¨™ã¯OSã«ä»»ã›ã‚‹
+		wrc.right - wrc.left,//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å¹…
+		wrc.bottom - wrc.top,//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦é«˜
+		nullptr,//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¿ã‚¤ãƒˆãƒ«
+		nullptr,
+		w.hInstance,//å‘¼ã³å‡ºã—ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãƒãƒ³ãƒ‰ãƒ«
+		nullptr);
+
+#ifdef _DEBUG
+	//ãƒ‡ãƒãƒƒã‚°ãƒ¬ã‚¤ãƒ¤ãƒ¼æœ‰åŠ¹åŒ–
+	//ãƒ‡ãƒã‚¤ã‚¹ç”Ÿæˆå‰ã«ã‚„ã£ã¦ãŠã‹ãªã„ã¨ãƒ‡ãƒã‚¤ã‚¹ãŒãƒ­ã‚¹ã™ã‚‹ã‚‰ã—ã„
+	EnableDebugLayer();
+#else
+	CreateDXGIFactory1(IID_PPV_ARGS(&_dxgiFactory));
+#endif
+	
+	EnableDebugLayer();
 	D3D_FEATURE_LEVEL levels[] = {
 		D3D_FEATURE_LEVEL_12_1,
 		D3D_FEATURE_LEVEL_12_0,
 		D3D_FEATURE_LEVEL_11_1,
 		D3D_FEATURE_LEVEL_11_0,
 	};
+	HRESULT result = S_OK;
+	if (FAILED(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&_dxgiFactory)))) {
+		if (FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(&_dxgiFactory)))) {
+			return -1;
+		}
+	}
+
 	D3D_FEATURE_LEVEL feature_level;
 	for (auto lv : levels) {
 		if (D3D12CreateDevice(nullptr, lv, IID_PPV_ARGS(&_dev)) == S_OK) {
@@ -62,66 +110,48 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			break;
 		}
 	}
-	auto result = CreateDXGIFactory1(IID_PPV_ARGS(&_dxgiFactory));
+
+//	auto result = CreateDXGIFactory1(IID_PPV_ARGS(&_dxgiFactory));
 	
-	//ƒAƒ_ƒvƒ^‚Ì—ñ‹“Œ^
+	//ã‚¢ãƒ€ãƒ—ã‚¿ã®åˆ—æŒ™å‹
 	std::vector<IDXGIAdapter*>adapters;
-	//‚±‚±‚É“Á’è‚Ì–¼‘O‚ğ‚ÂƒAƒ_ƒvƒ^[ƒIƒuƒWƒFƒNƒg‚ª“ü‚é
+	//ã“ã“ã«ç‰¹å®šã®åå‰ã‚’æŒã¤ã‚¢ãƒ€ãƒ—ã‚¿ãƒ¼ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒå…¥ã‚‹
 	IDXGIAdapter* tmpAdapter = nullptr;
-	//—˜—p‰Â”\‚ÈƒAƒ_ƒvƒ^[‚ğ—ñ‹“‚µA—ñ‹“‚³‚ê‚½ƒAƒ_ƒvƒ^[‚ğstd::vector‚ÉŠi”[
+	//åˆ©ç”¨å¯èƒ½ãªã‚¢ãƒ€ãƒ—ã‚¿ãƒ¼ã‚’åˆ—æŒ™ã—ã€åˆ—æŒ™ã•ã‚ŒãŸã‚¢ãƒ€ãƒ—ã‚¿ãƒ¼ã‚’std::vectorã«æ ¼ç´
 	for (int i = 0; _dxgiFactory->EnumAdapters(i, &tmpAdapter) != DXGI_ERROR_NOT_FOUND; ++i) {
 		adapters.push_back(tmpAdapter);
 	}
 	for (auto adpt : adapters) {
 		DXGI_ADAPTER_DESC adesc = {};
-		adpt->GetDesc(&adesc);//ƒAƒ_ƒvƒ^[‚Ìà–¾ƒIƒuƒWƒFƒNƒgæ“¾
+		adpt->GetDesc(&adesc);//ã‚¢ãƒ€ãƒ—ã‚¿ãƒ¼ã®èª¬æ˜ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆå–å¾—
 		std::wstring strDesc = adesc.Description;
-		//’T‚µ‚½‚¢ƒAƒ_ƒvƒ^[‚Ì–¼‘O‚ğŠm”F
-		//NVIDIA‚ªŠÜ‚Ü‚ê‚Ä‚¢‚éƒAƒ_ƒvƒ^[ƒIƒuƒWƒFƒNƒg‚ğŒ©‚Â‚¯‚ÄtmpAdapter‚ÉŠi”[
+		//æ¢ã—ãŸã„ã‚¢ãƒ€ãƒ—ã‚¿ãƒ¼ã®åå‰ã‚’ç¢ºèª
+		//NVIDIAãŒå«ã¾ã‚Œã¦ã„ã‚‹ã‚¢ãƒ€ãƒ—ã‚¿ãƒ¼ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’è¦‹ã¤ã‘ã¦tmpAdapterã«æ ¼ç´
 		if (strDesc.find(L"NVIDIA") != std::string::npos) {
 			tmpAdapter = adpt;
 			break;
 		}
 	}
-	//ƒRƒ}ƒ“ƒhƒAƒƒP[ƒ^[(ID3D12CommandAllocator)‚Ì¶¬
+	//ã‚³ãƒãƒ³ãƒ‰ã‚¢ãƒ­ã‚±ãƒ¼ã‚¿ãƒ¼(ID3D12CommandAllocator)ã®ç”Ÿæˆ
 	result = _dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
 										  IID_PPV_ARGS(&_cmdAllocator));
 	result = _dev->CreateCommandList(0,
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
 		_cmdAllocator, nullptr,
 		IID_PPV_ARGS(&_cmdList));
-
-	//ƒRƒ}ƒ“ƒhƒLƒ…[‚Ìİ’è
+	
+	//ã‚³ãƒãƒ³ãƒ‰ã‚­ãƒ¥ãƒ¼ã®è¨­å®š
 	D3D12_COMMAND_QUEUE_DESC cmdQueueDesc = {};
-	cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;//ƒ^ƒCƒ€ƒAƒEƒg‚È‚µ
+	cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;//ã‚¿ã‚¤ãƒ ã‚¢ã‚¦ãƒˆãªã—
 	cmdQueueDesc.NodeMask = 0;
-	cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;//ƒvƒ‰ƒCƒIƒŠƒeƒB“Á‚É‚È‚µ
-	cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;//ƒRƒ}ƒ“ƒhƒŠƒXƒg‚Æ‡‚í‚¹‚é
+	cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;//ãƒ—ãƒ©ã‚¤ã‚ªãƒªãƒ†ã‚£ç‰¹ã«ãªã—
+	cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;//ã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆã¨åˆã‚ã›ã‚‹
 	result = _dev->CreateCommandQueue(&cmdQueueDesc,
-		IID_PPV_ARGS(&cmdQueue));//ƒRƒ}ƒ“ƒhƒLƒ…[¶¬
+		IID_PPV_ARGS(&cmdQueue));//ã‚³ãƒãƒ³ãƒ‰ã‚­ãƒ¥ãƒ¼ç”Ÿæˆ
 
-	w.cbSize = sizeof(WNDCLASSEX);
-	w.lpfnWndProc = (WNDPROC)WindowProcedure;//ƒR[ƒ‹ƒoƒbƒNŠÖ”‚Ìw’è
-	w.lpszClassName = _T("DX12sample");//ƒAƒvƒŠƒP[ƒVƒ‡ƒ“–¼‚Ä‚«‚Æ‚¤‚Å‚¢‚¢
-	w.hInstance = GetModuleHandle(nullptr);//ƒnƒ“ƒhƒ‹‚Ìæ“¾
-	RegisterClassEx(&w);//ƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒNƒ‰ƒXiƒEƒBƒ“ƒhƒE‚Ìw’è‚ğOS‚É“`‚¦‚éj
-	RECT wrc = { 0,0,WINDOW_WIDTH,WINDOW_HEIGHT };//ƒEƒBƒ“ƒhƒEƒTƒCƒYŒˆ’è
-	//ŠÖ”‚ÅƒEƒBƒ“ƒhƒEƒTƒCƒY‚ğ•â³‚·‚é
-	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
-	//ƒEƒBƒ“ƒhƒE‚Ì¶¬
-	HWND hwnd = CreateWindow(w.lpszClassName,//ƒNƒ‰ƒX–¼w’è
-		_T("DX12ƒeƒXƒg"),//ƒ^ƒCƒgƒ‹ƒo[‚Ì•¶š
-		WS_OVERLAPPEDWINDOW,//ƒ^ƒCƒgƒ‹ƒo[‚Æ‹«ŠEü‚ª‚ ‚éƒEƒBƒ“ƒhƒE
-		CW_USEDEFAULT,//XÀ•W‚ÍOS‚É”C‚¹‚é
-		CW_USEDEFAULT,//YÀ•W‚ÍOS‚É”C‚¹‚é
-		wrc.right - wrc.left,//ƒEƒBƒ“ƒhƒE•
-		wrc.bottom - wrc.top,//ƒEƒBƒ“ƒhƒE‚
-		nullptr,//eƒEƒBƒ“ƒhƒEƒ^ƒCƒgƒ‹
-		nullptr,
-		w.hInstance,//ŒÄ‚Ño‚µƒAƒvƒŠƒP[ƒVƒ‡ƒ“ƒnƒ“ƒhƒ‹
-		nullptr);
+	
 
-	DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};//ƒŒƒ“ƒ_ƒŠƒ“ƒO‚³‚ê‚½ƒf[ƒ^‚ğo—Í‚·‚é‘O‚ÉŠi”[‚·‚é‚½‚ß‚ÌƒIƒuƒWƒFƒNƒg
+	DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};//ãƒ¬ãƒ³ãƒ€ãƒªãƒ³ã‚°ã•ã‚ŒãŸãƒ‡ãƒ¼ã‚¿ã‚’å‡ºåŠ›ã™ã‚‹å‰ã«æ ¼ç´ã™ã‚‹ãŸã‚ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 	swapchainDesc.Width = WINDOW_WIDTH;
 	swapchainDesc.Height = WINDOW_HEIGHT;
 	swapchainDesc.Format =DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -129,68 +159,111 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	swapchainDesc.SampleDesc.Count = 1;
 	swapchainDesc.SampleDesc.Quality = 0;
 	swapchainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER;
-	swapchainDesc.BufferCount = 2;//ƒoƒbƒNƒoƒbƒtƒ@‚ÍL‚Ñk‚İ‰Â”\
-	swapchainDesc.Scaling = DXGI_SCALING_STRETCH;//ƒtƒŠƒbƒvŒã‚Í‘¬‚â‚©‚É”jŠü
+	swapchainDesc.BufferCount = 2;//ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã¯ä¼¸ã³ç¸®ã¿å¯èƒ½
+	swapchainDesc.Scaling = DXGI_SCALING_STRETCH;//ãƒ•ãƒªãƒƒãƒ—å¾Œã¯é€Ÿã‚„ã‹ã«ç ´æ£„
 	swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-	//“Á‚Éw’è‚È‚µ
-	swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;//ƒEƒBƒ“ƒhƒEƒtƒ‹ƒXƒNƒŠ[ƒ“Ø‚è‘Ö‚¦‰Â”\
+	//ç‰¹ã«æŒ‡å®šãªã—
+	swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ•ãƒ«ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆå¯èƒ½
 	swapchainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	result = _dxgiFactory->CreateSwapChainForHwnd(
-		//swapchain‚Ìo—ÍƒEƒBƒ“ƒhƒE‚Ìƒnƒ“ƒhƒ‹‚ÉŠÖ˜A•t‚¯‚ç‚ê‚Ä‚¢‚éswapchainì¬
+		//swapchainã®å‡ºåŠ›ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ãƒãƒ³ãƒ‰ãƒ«ã«é–¢é€£ä»˜ã‘ã‚‰ã‚Œã¦ã„ã‚‹swapchainä½œæˆ
 		cmdQueue,
 		hwnd,
 		&swapchainDesc,
 		nullptr,
 		nullptr,
 		(IDXGISwapChain1**)&_swapchain);
-	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};//ƒfƒBƒXƒNƒŠƒvƒ^ƒq[ƒviƒfƒBƒXƒNƒŠƒvƒ^‚Ì“à—e‚ğŠi”[‚µ‚Ä‚¨‚­‚Æ‚±‚ëj‚ğì‚é‚½‚ß‚Ìİ’è‚ğ‘‚­‚½‚ß‚ÌƒIƒuƒWƒFƒNƒg
-	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;//ƒoƒbƒtƒ@‚Ì—p“r‚ğ‹³‚¦‚Ä‚ ‚°‚é‚Æ‚±‚ëAƒŒƒ“ƒ_ƒ^[ƒQƒbƒg‚¾‚©‚çRTV
-	heapDesc.NodeMask = 0;//–{—ˆGPu‚ª•¡”‚ ‚é‚Æ‚«‚Ì‚½‚ß‚Ì‚à‚Ì‚È‚Ì‚Å0
-	heapDesc.NumDescriptors = 2;//•\‚Æ— ‚¾‚©‚ç2‚Â
-	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;//ƒrƒ…[î•ñ‚É‚ ‚½‚Âî•ñ‚ğƒVƒF[ƒ_‘¤‚©‚çQÆ‚·‚é•K—v«‚ª‚ ‚é‚©‚Ç‚¤‚©A¡‰ñ‚Í“Á‚Éw’è‚È‚µ
+	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};//ãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ãƒ’ãƒ¼ãƒ—ï¼ˆãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ã®å†…å®¹ã‚’æ ¼ç´ã—ã¦ãŠãã¨ã“ã‚ï¼‰ã‚’ä½œã‚‹ãŸã‚ã®è¨­å®šã‚’æ›¸ããŸã‚ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;//ãƒãƒƒãƒ•ã‚¡ã®ç”¨é€”ã‚’æ•™ãˆã¦ã‚ã’ã‚‹ã¨ã“ã‚ã€ãƒ¬ãƒ³ãƒ€ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã ã‹ã‚‰RTV
+	heapDesc.NodeMask = 0;//æœ¬æ¥GPuãŒè¤‡æ•°ã‚ã‚‹ã¨ãã®ãŸã‚ã®ã‚‚ã®ãªã®ã§0
+	heapDesc.NumDescriptors = 2;//è¡¨ã¨è£ã ã‹ã‚‰2ã¤
+	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;//ãƒ“ãƒ¥ãƒ¼æƒ…å ±ã«ã‚ãŸã¤æƒ…å ±ã‚’ã‚·ã‚§ãƒ¼ãƒ€å´ã‹ã‚‰å‚ç…§ã™ã‚‹å¿…è¦æ€§ãŒã‚ã‚‹ã‹ã©ã†ã‹ã€ä»Šå›ã¯ç‰¹ã«æŒ‡å®šãªã—
 	ID3D12DescriptorHeap* rtvHeaps = nullptr;
 	result = _dev->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&rtvHeaps));
 	DXGI_SWAP_CHAIN_DESC swcDesc = {};//
 	result = _swapchain->GetDesc(&swcDesc);//[investigate]
 	std::vector<ID3D12Resource*>_backBuffers(swcDesc.BufferCount);
-	for (int idx = 0; idx < swcDesc.BufferCount; ++idx) {//ƒoƒbƒNƒoƒbƒtƒ@‚Ì”‚¾‚¯İ’è‚ª•K—v‚È‚Ì‚Åƒ‹[ƒv
-		result = _swapchain->GetBuffer(idx, IID_PPV_ARGS(&_backBuffers[idx]));//ƒXƒƒbƒvƒ`ƒF[ƒ“ã‚ÌƒoƒbƒNƒoƒbƒtƒ@æ“¾
-		D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();//[invistigate]
+	D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();//[invistigate]
+	for (size_t idx = 0; idx < swcDesc.BufferCount; ++idx) {//ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã®æ•°ã ã‘è¨­å®šãŒå¿…è¦ãªã®ã§ãƒ«ãƒ¼ãƒ—
+		result = _swapchain->GetBuffer(idx, IID_PPV_ARGS(&_backBuffers[idx]));//ã‚¹ãƒ¯ãƒƒãƒ—ãƒã‚§ãƒ¼ãƒ³ä¸Šã®ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡å–å¾—
 		handle.ptr += idx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		_dev->CreateRenderTargetView(_backBuffers[idx], nullptr, handle);
 	}
-	
+	ID3D12Fence* _fence = nullptr;
+	UINT64 _fenceVal = 0;
+	result = _dev->CreateFence(//ãƒ•ã‚§ãƒ³ã‚¹ä½œã‚‹ã€ã‚ˆãã‚ã‹ã‚‰ã‚“ã‹ã‚‰ã‚ã¨ã§ãƒªãƒ•ã‚¡ãƒ¬ãƒ³ã‚¹è¦‹ã‚‹
+		_fenceVal,
+		D3D12_FENCE_FLAG_NONE,
+		IID_PPV_ARGS(&_fence));
 	ShowWindow(hwnd, SW_SHOW);
 	MSG msg = {};
+	
+
+	
+	
+	
 	while (true) {
 		if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
 		}
-		//ƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚ªI‚í‚é‚Æ‚«‚Émessage‚ªWM_QUIT‚É‚È‚é
+		//ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ãŒçµ‚ã‚ã‚‹ã¨ãã«messageãŒWM_QUITã«ãªã‚‹
 		if (msg.message == WM_QUIT) {
 			break;
 		}
+		auto bbIdx = _swapchain->GetCurrentBackBufferIndex();//[invistigate]
+		D3D12_RESOURCE_BARRIER BarrierDesc = {};//ã“ã®ã‚ãŸã‚Šã‚ˆãã‚ã‹ã‚‰ã‚“ã‹ã‚‰å¾Œã§ã—ã‚‰ã¹ã‚‹
+		BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;//é·ç§»
+		BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		BarrierDesc.Transition.pResource = _backBuffers[bbIdx];
+		BarrierDesc.Transition.Subresource = 0;
+		BarrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;//ç›´å‰ã¯PRESENTçŠ¶æ…‹
+		BarrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;//ä»Šã‹ã‚‰ãƒ¬ãƒ³ãƒ€ã‚¿ãƒ¼ã‚²ãƒƒãƒˆçŠ¶æ…‹
+		_cmdList->ResourceBarrier(1, &BarrierDesc);//ãƒãƒªã‚¢æŒ‡å®šå®Ÿè¡Œ
+
+		result = _cmdAllocator->Reset();//[invistigate]
+
+		
+		_cmdList->ResourceBarrier(1, &BarrierDesc);
+		//ãƒ¬ãƒ³ãƒ€ã‚¿ãƒ¼ã‚²ãƒƒãƒˆæŒ‡å®š
+		auto rtvH = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
+		rtvH.ptr +=  static_cast<ULONG_PTR>(bbIdx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
+		_cmdList->OMSetRenderTargets(1, &rtvH, false, nullptr);
+
+		float clearColor[] = { 1.0f,1.0f,0.0f,1.0f };//é»„è‰²ã§ç”»é¢ã‚¯ãƒªã‚¢
+		_cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
+
+		BarrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		BarrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+		_cmdList->ResourceBarrier(1, &BarrierDesc);
+		//å‘½ä»¤ã®ã‚¯ãƒ­ãƒ¼ã‚º
+		_cmdList->Close();
+
+		ID3D12CommandList* cmdlists[] = { _cmdList };
+		cmdQueue->ExecuteCommandLists(1, cmdlists);
+		////å¾…ã¡
+		cmdQueue->Signal(_fence, ++_fenceVal);
+		if (_fence->GetCompletedValue() != _fenceVal) {
+			//å¤šåˆ†GPUã®è«¸ã€…ã‚¤ãƒ™ãƒ³ãƒˆãƒãƒ³ãƒ‰ãƒ«å–å¾—ã—ã¦ã‚‹ã‘ã©
+			//ã‚ˆãã‚ã‹ã‚‰ã‚“ã‹ã‚‰å¾Œã§èª¿ã¹ã‚‹
+			auto event = CreateEvent(nullptr, false, false, nullptr);
+			_fence->SetEventOnCompletion(_fenceVal, event);//ã‚¤ãƒ™ãƒ³ãƒˆãŒç™ºç”Ÿã™ã‚‹ã¾ã§å¾…ã¡ç¶šã‘ã‚‹
+			WaitForSingleObject(event, INFINITE);
+			//ã‚¤ãƒ™ãƒ³ãƒˆãƒãƒ³ãƒ‰ãƒ«ã‚’é–‰ã˜ã‚‹
+			CloseHandle(event);
+			
+			
+		}
+		_cmdAllocator->Reset();
+		_cmdList->Reset(_cmdAllocator, nullptr);//å†ã³ã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆã‚’ãŸã‚ã‚‹æº–å‚™
+		
+		//ãƒ•ãƒªãƒƒãƒ—
+		_swapchain->Present(1, 0);
 	}
-	auto bbIdx = _swapchain->GetCurrentBackBufferIndex();//[invistigate]
-	result = _cmdAllocator->Reset();//[invistigate]
+	UnregisterClass(w.lpszClassName, w.hInstance);//ã‚‚ã†ã‚¯ãƒ©ã‚¹ã‚’ä½¿ã‚ãªã„ã®ã§ç™»éŒ²è§£é™¤
 	
-	auto rtvH = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
-	rtvH.ptr += bbIdx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	_cmdList->OMSetRenderTargets(1, &rtvH, true, nullptr);
-	UnregisterClass(w.lpszClassName, w.hInstance);//‚à‚¤ƒNƒ‰ƒX‚ğg‚í‚È‚¢‚Ì‚Å“o˜^‰ğœ
-	float clearColor[] = { 1.0f,1.0f,0.0f,1.0f };//‰©F‚Å‰æ–ÊƒNƒŠƒA
-	_cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
-	//–½—ß‚ÌƒNƒ[ƒY
-	_cmdList->Close();
-	ID3D12CommandList* cmdlists[] = { _cmdList };
-	cmdQueue->ExecuteCommandLists(1, cmdlists);
-	_cmdAllocator->Reset();
-	_cmdList->Reset(_cmdAllocator,nullptr );//Ä‚ÑƒRƒ}ƒ“ƒhƒŠƒXƒg‚ğ‚½‚ß‚é€”õ
-	//ƒtƒŠƒbƒv
-	_swapchain->Present(1, 0);
-	DebugOutputFormatString("Show window test.");
 	getchar();
+
 	return 0;
 }
 
