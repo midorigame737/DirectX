@@ -11,7 +11,7 @@
 #define WINDOW_HEIGHT 720
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
-
+using namespace DirectX;
 using namespace std;
 //@brief コンソール画面にフォーマット付き文字列を表示
 //@param format(%dとか%fとかの)
