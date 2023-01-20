@@ -1,4 +1,5 @@
 ﻿#include<Windows.h>
+#include<DirectXMath.h>
 #include<vector>
 #ifdef _DEBUG 
 #include<iostream>
