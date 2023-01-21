@@ -51,6 +51,11 @@ IDXGISwapChain4* _swapchain = nullptr;//
 ID3D12CommandAllocator* _cmdAllocator = nullptr;//GPUコマンド用のストレージ割り当てとかそこへのインターフェース
 ID3D12GraphicsCommandList* _cmdList = nullptr;//レンダリング用のグラフィックスコマンドの命令オブジェクト
 ID3D12CommandQueue* cmdQueue = nullptr;//コマンドリストでためた命令セットを実行していくためのキュー
+XMFLOAT3 vertices[]={//頂点座標定義
+	{-1.0f,-1.0f,0.0f},//左下
+	{-1.0f,1.0f,0.0f},//左上
+	{1.0f,-1.0f,0.0f}//右下
+};
 #ifdef _DEBUG
 int main() {
 #else
@@ -174,6 +179,33 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		nullptr,
 		nullptr,
 		(IDXGISwapChain1**)&_swapchain);
+	//頂点バッファの生成
+	D3D12_HEAP_PROPERTIES heapprop = {};
+	heapprop.Type = D3D12_HEAP_TYPE_UPLOAD;
+	heapprop.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+	heapprop.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+	D3D12_RESOURCE_DESC resdesc = {};
+	resdesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	sizeof(vertices);
+	resdesc.Height = 1;
+	resdesc.DepthOrArraySize = 1;
+	resdesc.MipLevels = 1;
+	resdesc.Format= DXGI_FORMAT_UNKNOWN;
+	resdesc.SampleDesc.Count = 1;
+	resdesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+	resdesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
+	ID3D12Resource* verBuff = nullptr;
+
+	result = _dev->CreateCommittedResource(
+		&heapprop,
+		D3D12_HEAP_FLAG_NONE,
+		&resdesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&verBuff));
+
+
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};//ディスクリプタヒープ（ディスクリプタの内容を格納しておくところ）を作るための設定を書くためのオブジェクト
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;//バッファの用途を教えてあげるところ、レンダターゲットだからRTV
 	heapDesc.NodeMask = 0;//本来GPuが複数あるときのためのものなので0
