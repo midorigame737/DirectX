@@ -180,20 +180,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		nullptr,
 		(IDXGISwapChain1**)&_swapchain);
 	//頂点バッファの生成
-	D3D12_HEAP_PROPERTIES heapprop = {};
-	heapprop.Type = D3D12_HEAP_TYPE_UPLOAD;
+	D3D12_HEAP_PROPERTIES heapprop = {};//ヒープのプロパティ
+	heapprop.Type = D3D12_HEAP_TYPE_UPLOAD;//ヒープのタイプ
 	heapprop.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-	heapprop.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-	D3D12_RESOURCE_DESC resdesc = {};
-	resdesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	heapprop.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;//ヒープのページプロパティを指定するD3D12_CPU_PAGE_PROPERTY型指定された値。(よくわからん)
+	D3D12_RESOURCE_DESC resdesc = {};//テクスチャなどのリソース
+	resdesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;//リソースのディメンションかバッファを指定する
 	sizeof(vertices);
-	resdesc.Height = 1;
-	resdesc.DepthOrArraySize = 1;
-	resdesc.MipLevels = 1;
-	resdesc.Format= DXGI_FORMAT_UNKNOWN;
+	resdesc.Height = 1;//リソースの幅
+	resdesc.DepthOrArraySize = 1;//3Dの場合はリソースの深さを1Dor2D の場合配列サイズをの指定
+	resdesc.MipLevels = 1;//MIP レベルの数を指定
+	resdesc.Format= DXGI_FORMAT_UNKNOWN;//DXGI_FORMATを指定
 	resdesc.SampleDesc.Count = 1;
 	resdesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-	resdesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	resdesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;//D3D12_TEXTURE_LAYOUTの 1 つのメンバーを指定
 
 	ID3D12Resource* verBuff = nullptr;
 
