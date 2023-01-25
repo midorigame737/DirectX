@@ -195,7 +195,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	resdesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 	resdesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;//D3D12_TEXTURE_LAYOUTの 1 つのメンバーを指定
 
-	ID3D12Resource* verBuff = nullptr;
+	ID3D12Resource* vertBuff = nullptr;
 
 	result = _dev->CreateCommittedResource(
 		&heapprop,
@@ -203,8 +203,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		&resdesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
-		IID_PPV_ARGS(&verBuff));
+		IID_PPV_ARGS(&vertBuff));
 
+	XMFLOAT3* vertMap = nullptr;
+
+	result = vertBuff->Map(//バッファの仮想上のアドレスを得るメソッド
+		0,//リソース配列やミップマップの場合、サブリソース番号（今回は違うので0）
+		nullptr,//マップしたい範囲、全範囲なのでぬるぽ
+		(void**)&vertMap);//ポインタへのポインタ
 
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};//ディスクリプタヒープ（ディスクリプタの内容を格納しておくところ）を作るための設定を書くためのオブジェクト
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;//バッファの用途を教えてあげるところ、レンダターゲットだからRTV
