@@ -211,7 +211,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		0,//リソース配列やミップマップの場合、サブリソース番号（今回は違うので0）
 		nullptr,//マップしたい範囲、全範囲なのでぬるぽ
 		(void**)&vertMap);//ポインタへのポインタ
-
+	std::copy(std::begin(vertices),
+	std::end(vertices), vertMap);
+		vertBuff->Unmap(0, nullptr);
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};//ディスクリプタヒープ（ディスクリプタの内容を格納しておくところ）を作るための設定を書くためのオブジェクト
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;//バッファの用途を教えてあげるところ、レンダターゲットだからRTV
 	heapDesc.NodeMask = 0;//本来GPuが複数あるときのためのものなので0
