@@ -214,6 +214,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	std::copy(std::begin(vertices),
 	std::end(vertices), vertMap);
 		vertBuff->Unmap(0, nullptr);
+
+		D3D12_VERTEX_BUFFER_VIEW vbView = {};
+		vbView.BufferLocation = vertBuff->GetGPUVirtualAddress();//バッファの仮想アドレス
+		vbView.SizeInBytes = sizeof(vertices);//全バイト数
+		vbView.StrideInBytes = sizeof(vertices[0]);//1頂点あたりのバイト数
+		_cmdList->IASetVertexBuffers(0, 1, &vbView);
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};//ディスクリプタヒープ（ディスクリプタの内容を格納しておくところ）を作るための設定を書くためのオブジェクト
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;//バッファの用途を教えてあげるところ、レンダターゲットだからRTV
 	heapDesc.NodeMask = 0;//本来GPuが複数あるときのためのものなので0
