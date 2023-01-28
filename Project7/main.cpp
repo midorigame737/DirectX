@@ -1,5 +1,6 @@
 ﻿#include<Windows.h>
 #include<DirectXMath.h>
+#include<d3dcompiler.h>
 #include<vector>
 #ifdef _DEBUG 
 #include<iostream>
@@ -11,6 +12,7 @@
 #define WINDOW_HEIGHT 720
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
+#pragma comment(lib,"d3dcompiler.lib")
 using namespace DirectX;
 using namespace std;
 //@brief コンソール画面にフォーマット付き文字列を表示
@@ -53,6 +55,7 @@ ID3D12GraphicsCommandList* _cmdList = nullptr;//レンダリング用のグラ�
 ID3D12CommandQueue* cmdQueue = nullptr;//コマンドリストでためた命令セットを実行していくためのキュー
 ID3DBlob* vsBlob = nullptr;
 ID3DBlob* psBlob = nullptr;
+ID3DBlob* errorBlob = nullptr;
 XMFLOAT3 vertices[]={//頂点座標定義
 	{-1.0f,-1.0f,0.0f},//左下
 	{-1.0f,1.0f,0.0f},//左上
@@ -247,7 +250,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	ShowWindow(hwnd, SW_SHOW);
 	MSG msg = {};
 	
-
+	//頂点シェーダーの読み込み
+	result = D3DCompileFromFile(
+		L"BasicPixelShader.hlsl",//シェーダファイル、Lついてるからワイド文字列
+		nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,//インクルードはデフォルト
+		"BasicVS", "vs_5_0",//関数はBasicVS、対象シェーダーはvs_5_0
+		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,//デバッグ用及び最適化なし
+		0,
+		&vsBlob, &errorBlob);//エラー時にerrorBlobにメッセージが入る
 	
 	
 	
