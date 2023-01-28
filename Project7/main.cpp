@@ -51,6 +51,8 @@ IDXGISwapChain4* _swapchain = nullptr;//
 ID3D12CommandAllocator* _cmdAllocator = nullptr;//GPUコマンド用のストレージ割り当てとかそこへのインターフェース
 ID3D12GraphicsCommandList* _cmdList = nullptr;//レンダリング用のグラフィックスコマンドの命令オブジェクト
 ID3D12CommandQueue* cmdQueue = nullptr;//コマンドリストでためた命令セットを実行していくためのキュー
+ID3DBlob* vsBlob = nullptr;
+ID3DBlob* psBlob = nullptr;
 XMFLOAT3 vertices[]={//頂点座標定義
 	{-1.0f,-1.0f,0.0f},//左下
 	{-1.0f,1.0f,0.0f},//左上
