@@ -192,6 +192,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	D3D12_RESOURCE_DESC resdesc = {};//テクスチャなどのリソース
 	resdesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;//リソースのディメンションかバッファを指定する
 	sizeof(vertices);
+	resdesc.Width = sizeof(vertices);
 	resdesc.Height = 1;//リソースの幅
 	resdesc.DepthOrArraySize = 1;//3Dの場合はリソースの深さを1Dor2D の場合配列サイズをの指定
 	resdesc.MipLevels = 1;//MIP レベルの数を指定
@@ -215,7 +216,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	result = vertBuff->Map(//バッファの仮想上のアドレスを得るメソッド
 		0,//リソース配列やミップマップの場合、サブリソース番号（今回は違うので0）
 		nullptr,//マップしたい範囲、全範囲なのでぬるぽ
-		(void**)&vertMap);//ポインタへのポインタ
+		(void**) &vertMap);//ポインタへのポインタ
 	std::copy(std::begin(vertices),
 	std::end(vertices), vertMap);
 		vertBuff->Unmap(0, nullptr);
