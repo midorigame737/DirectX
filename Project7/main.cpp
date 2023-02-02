@@ -254,7 +254,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//頂点シェーダーの読み込み
 	result = D3DCompileFromFile(
 		L"BasicPixelShader.hlsl",//シェーダファイル、Lついてるからワイド文字列
-		nullptr,
+		nullptr,//シェーダーマクロオブジェクト
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,//インクルードはデフォルト
 		"BasicVS", "vs_5_0",//関数はBasicVS、対象シェーダーはvs_5_0
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,//デバッグ用及び最適化なし
