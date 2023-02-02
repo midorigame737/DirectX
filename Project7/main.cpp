@@ -260,7 +260,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,//デバッグ用及び最適化なし
 		0,
 		&vsBlob, &errorBlob);//エラー時にerrorBlobにメッセージが入る
-	
+	//ピクセルシェーダー読み込み
+	result = D3DCompileFromFile(
+		L"BasicPixelShader.hlsl",//シェーダー名
+		nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"BasicPS", "ps_5_0",//関数はBasicPS,対象シェーダーはps_5_0
+		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+		0,
+		&psBlob, &errorBlob);
 	
 	
 	while (true) {
