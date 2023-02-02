@@ -256,7 +256,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		L"BasicPixelShader.hlsl",//シェーダファイル、Lついてるからワイド文字列
 		nullptr,//シェーダーマクロオブジェクト
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,//インクルードはデフォルト
-		"BasicPS", "ps_5_0",//関数はBasicVS、対象シェーダーはvs_5_0
+		"BasicVS", "vs_5_0",//関数はBasicVS、対象シェーダーはvs_5_0
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,//デバッグ用及び最適化なし
 		0,
 		&vsBlob, &errorBlob);//エラー時にerrorBlobにメッセージが入る
