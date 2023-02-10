@@ -38,6 +38,15 @@ void EnableDebugLayer() {
 	debugLayer->Release();//有効化したらインターフェースを開放する
 }
 
+void OutBloberror(ID3DBlob* errorBlob) {
+	std::string errstr;
+	errstr.resize(errorBlob->GetBufferSize());//大きさ必要な分に変える
+	std::copy_n(//データをコピー
+		(char*)errorBlob->GetBufferPointer(),
+		errorBlob->GetBufferSize(),
+		errstr.begin());
+	OutputDebugStringA(errstr.c_str());//データ表示
+}
 LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	//ウィンドウが破棄されたら呼ばれる
 	if (msg == WM_DESTROY) {
