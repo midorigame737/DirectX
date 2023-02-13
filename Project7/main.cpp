@@ -269,6 +269,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,//デバッグ用及び最適化なし
 		0,
 		&vsBlob, &errorBlob);//エラー時にerrorBlobにメッセージが入る
+	OutBloberror(errorBlob);
 	//ピクセルシェーダー読み込み
 	result = D3DCompileFromFile(
 		L"BasicPixelShader.hlsl",//シェーダー名
@@ -278,8 +279,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
 		0,
 		&psBlob, &errorBlob);
-	
-	
+
+	OutBloberror(errorBlob);
 	while (true) {
 		if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
