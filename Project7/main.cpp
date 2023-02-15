@@ -297,6 +297,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			OutBloberror(errorBlob);
 		}
 	}
+
+	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
+		{
+			"POSITION",//データが何を表すか、今回は座標なのでPOSITION
+			0,//同じセマンティクスのがあるときのインデックス、ないので0
+			DXGI_FORMAT_R32G32B32A32_FLOAT,//データのフォーマット
+			0,//入力スロットのインデックス
+			D3D12_APPEND_ALIGNED_ELEMENT,//データオフセットの位置
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,//データの内容一頂点ごとにこのデータが入ってる
+			0//一度に描画するインスタンスの数
+			},
+	};
+
 	while (true) {
 		if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
