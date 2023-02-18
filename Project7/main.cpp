@@ -310,6 +310,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			},
 	};
 
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC gpipeline = {};
+	gpipeline.pRootSignature = nullptr;//ルートシグネクチャあとで設定
+	//シェーダの設定
+	gpipeline.VS.pShaderBytecode = vsBlob->GetBufferPointer();//バイトコードのポインタ
+	gpipeline.VS.BytecodeLength = vsBlob->GetBufferSize();//サイズ情報
+	gpipeline.PS.pShaderBytecode = psBlob->GetBufferPointer();
+	gpipeline.PS.BytecodeLength = psBlob->GetBufferSize();
+	gpipeline.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;//デフォルトのサンプルマスク定数(0xffffffff)
+	gpipeline.RasterizerState.MultisampleEnable = false;//サンプルマスクの設定
+	gpipeline.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;//カリング(見えないところ描画するかどうか)しない
+	gpipeline.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;//中身を塗りつぶす
+	gpipeline.RasterizerState.DepthClipEnable = true;//深度方向のクリッピングは有効に
 	while (true) {
 		if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
