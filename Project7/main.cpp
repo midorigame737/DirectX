@@ -317,11 +317,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	gpipeline.VS.BytecodeLength = vsBlob->GetBufferSize();//サイズ情報
 	gpipeline.PS.pShaderBytecode = psBlob->GetBufferPointer();
 	gpipeline.PS.BytecodeLength = psBlob->GetBufferSize();
-	gpipeline.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;//デフォルトのサンプルマスク定数(0xffffffff)
+	gpipeline.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;//デフォルトのサンプルマスク(ANDに使うやつ)定数(0xffffffff)
 	gpipeline.RasterizerState.MultisampleEnable = false;//サンプルマスクの設定
 	gpipeline.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;//カリング(見えないところ描画するかどうか)しない
 	gpipeline.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;//中身を塗りつぶす
-	gpipeline.RasterizerState.DepthClipEnable = true;//深度方向のクリッピングは有効に
+	gpipeline.RasterizerState.DepthClipEnable = true;//深度方向のクリッピング(描画範囲)は有効に
 	while (true) {
 		if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
