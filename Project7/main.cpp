@@ -330,6 +330,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	renderTargetBlendDesc.LogicOpEnable = false;//論理演算の有無
 	renderTargetBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;//RGBAの情報全部ブレンドするときに使う
 	gpipeline.BlendState.RenderTarget[0] = renderTargetBlendDesc;//1版最初のレンダターゲットに書いてきたやつ設定
+	
+	//入力レイアウトの設定
+	gpipeline.InputLayout.pInputElementDescs = inputLayout;//レイアウト先頭アドレス
+	gpipeline.InputLayout.NumElements = _countof(inputLayout);//レイアウト配列の要素数
+	gpipeline.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;//トライアングルストリップでカットなし
+	gpipeline.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;//構成要素は三角形
 
 	while (true) {
 		if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
