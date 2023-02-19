@@ -317,11 +317,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	gpipeline.VS.BytecodeLength = vsBlob->GetBufferSize();//サイズ情報
 	gpipeline.PS.pShaderBytecode = psBlob->GetBufferPointer();
 	gpipeline.PS.BytecodeLength = psBlob->GetBufferSize();
+
 	gpipeline.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;//デフォルトのサンプルマスク(ANDに使うやつ)定数(0xffffffff)
 	gpipeline.RasterizerState.MultisampleEnable = false;//サンプルマスクの設定
-	gpipeline.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;//カリング(見えないところ描画するかどうか)しない
+	gpipeline.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;//カリング(見えないところ描画するかどうか)しない、塗りつぶす
 	gpipeline.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;//中身を塗りつぶす
 	gpipeline.RasterizerState.DepthClipEnable = true;//深度方向のクリッピング(描画範囲)は有効に
+	gpipeline.BlendState.AlphaToCoverageEnable = false;//αテストの有無
+	gpipeline.BlendState.IndependentBlendEnable = false;//レンダターゲットへのブレンドステートの割り当ての設定(全部同じ)
+	D3D12_RENDER_TARGET_BLEND_DESC renderTargetBlendDesc = {};//レンダターゲットごとの設定
+	renderTargetBlendDesc.BlendEnable = false;//αブレンドの有無
+	renderTargetBlendDesc.LogicOpEnable = false;//論理演算の有無
+	renderTargetBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;//RGBAの情報全部ブレンドするときに使う
+	gpipeline.BlendState.RenderTarget[0] = renderTargetBlendDesc;//1版最初のレンダターゲットに書いてきたやつ設定
+
 	while (true) {
 		if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
