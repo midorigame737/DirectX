@@ -336,6 +336,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	gpipeline.InputLayout.NumElements = _countof(inputLayout);//レイアウト配列の要素数
 	gpipeline.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;//トライアングルストリップでカットなし
 	gpipeline.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;//構成要素は三角形
+	gpipeline.NumRenderTargets = 1;
+	gpipeline.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;//0~1に正規化されたRGBA
+
 
 	while (true) {
 		if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
