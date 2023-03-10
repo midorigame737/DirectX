@@ -229,7 +229,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	std::copy(std::begin(vertices),
 	std::end(vertices), vertMap);
 		vertBuff->Unmap(0, nullptr);
-
+		//ディスクリプタ:GPUメモリ上に存在する、様々なデータやバッファの種類や位置、大きさ
 		D3D12_VERTEX_BUFFER_VIEW vbView = {};
 		vbView.BufferLocation = vertBuff->GetGPUVirtualAddress();//バッファの仮想アドレス
 		vbView.SizeInBytes = sizeof(vertices);//全バイト数
@@ -341,7 +341,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	gpipeline.SampleDesc.Count = 1;//サンプルは1ピクセルに付き一つ
 	gpipeline.SampleDesc.Quality = 0;//クオリティは最低
 	ID3D12PipelineState* _pipelinestate = nullptr;
+	
+	ID3D12RootSignature* rootsignature = nullptr;
+
+
+	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
+	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+	//ルートシグネクチャのバイナリコードを作成する
+	ID3DBlob* rootSigBlob = nullptr;
+	result = D3D12SerializeRootSignature(
+		&rootSignatureDesc,//ルートシグネクチャ(グ)設定
+		D3D_ROOT_SIGNATURE_VERSION_1_0,//ルートシグネクチャバージョン
+		&rootSigBlob,//シェーダーを作った時と同じ
+		&errorBlob); // エラーも同様
+	result = _dev->CreateRootSignature(0,//nodemask 0でいい
+		rootSigBlob->GetBufferPointer(),//シェーダーのときと同様
+		rootSigBlob->GetBufferSize(),//シェーダーのときと同様
+		IID_PPV_ARGS(&rootsignature)
+	);
+	//バイナリコードをもとにルートシグネクチャオブジェクトを生成
 	result = _dev->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&_pipelinestate));
+
 	while (true) {
 		if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
@@ -360,7 +380,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		BarrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;//直前はPRESENT状態
 		BarrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;//今からレンダターゲット状態
 		_cmdList->ResourceBarrier(1, &BarrierDesc);//バリア指定実行
-
+		
 		result = _cmdAllocator->Reset();//[invistigate]
 
 		
