@@ -357,10 +357,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	result = _dev->CreateRootSignature(0,//nodemask 0でいい
 		rootSigBlob->GetBufferPointer(),//シェーダーのときと同様
 		rootSigBlob->GetBufferSize(),//シェーダーのときと同様
-		IID_PPV_ARGS(&rootsignature)
+		IID_PPV_ARGS(&rootsignature)//不要になったので解放
 	);
+	gpipeline.pRootSignature = rootsignature;
+
 	//バイナリコードをもとにルートシグネクチャオブジェクトを生成
 	result = _dev->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&_pipelinestate));
+
+	D3D12_VIEWPORT viewport = {};
+	viewport.Width = WINDOW_WIDTH;
+	viewport.Height = WINDOW_HEIGHT;
+	viewport.TopLeftX = 0;//出力先の左上座標X
+	viewport.TopLeftY = 0;//出力先の左上座標Y
+	viewport.MaxDepth = 1.0f;//深度最大値
+	viewport.MinDepth = 0.0f;//深度最低値
 
 	while (true) {
 		if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
