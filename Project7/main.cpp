@@ -371,7 +371,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	viewport.TopLeftY = 0;//出力先の左上座標Y
 	viewport.MaxDepth = 1.0f;//深度最大値
 	viewport.MinDepth = 0.0f;//深度最低値
-
+	
+	//シザ―短形(ビューポートのどこまで描画するか)設定
+	D3D12_RECT scissorrect = {};
+	scissorrect.top = 0;//切り抜き上座標
+	scissorrect.left = 0;//切り抜き左座標
+	scissorrect.right = scissorrect.left + WINDOW_WIDTH;//切り抜き右座標
+	scissorrect.bottom = scissorrect.top + WINDOW_HEIGHT;//切り抜き下座標
 	while (true) {
 		if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
