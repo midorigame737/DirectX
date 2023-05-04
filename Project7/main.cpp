@@ -116,12 +116,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		D3D_FEATURE_LEVEL_11_1,
 		D3D_FEATURE_LEVEL_11_0,
 	};
-	HRESULT result = S_OK;
-	if (FAILED(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&_dxgiFactory)))) {
+	//HRESULT result = S_OK;
+	/*if (FAILED(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&_dxgiFactory)))) {
 		if (FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(&_dxgiFactory)))) {
 			return -1;
 		}
-	}
+	}*/
 
 	D3D_FEATURE_LEVEL feature_level;
 	for (auto lv : levels) {
@@ -131,7 +131,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 	}
 
-//	auto result = CreateDXGIFactory1(IID_PPV_ARGS(&_dxgiFactory));
+	auto result = CreateDXGIFactory1(IID_PPV_ARGS(&_dxgiFactory));
 	
 	//アダプタの列挙型
 	std::vector<IDXGIAdapter*>adapters;
@@ -200,7 +200,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	heapprop.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;//ヒープのページプロパティを指定するD3D12_CPU_PAGE_PROPERTY型指定された値。(よくわからん)
 	D3D12_RESOURCE_DESC resdesc = {};//テクスチャなどのリソース
 	resdesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;//リソースのディメンションかバッファを指定する
-	sizeof(vertices);
 	resdesc.Width = sizeof(vertices);
 	resdesc.Height = 1;//リソースの幅
 	resdesc.DepthOrArraySize = 1;//3Dの場合はリソースの深さを1Dor2D の場合配列サイズをの指定
@@ -247,7 +246,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	std::vector<ID3D12Resource*>_backBuffers(swcDesc.BufferCount);
 	D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();//[invistigate]
 	for (size_t idx = 0; idx < swcDesc.BufferCount; ++idx) {//バックバッファの数だけ設定が必要なのでループ
-		result = _swapchain->GetBuffer(idx, IID_PPV_ARGS(&_backBuffers[idx]));//スワップチェーン上のバックバッファ取得
+		result = _swapchain->GetBuffer(static_cast<UINT>(idx), IID_PPV_ARGS(&_backBuffers[idx]));//スワップチェーン上のバックバッファ取得
 		handle.ptr += idx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		_dev->CreateRenderTargetView(_backBuffers[idx], nullptr, handle);
 	}
@@ -302,7 +301,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{
 			"POSITION",//データが何を表すか、今回は座標なのでPOSITION
 			0,//同じセマンティクスのがあるときのインデックス、ないので0
-			DXGI_FORMAT_R32G32B32A32_FLOAT,//データのフォーマット
+			DXGI_FORMAT_R32G32B32_FLOAT,//データのフォーマット
 			0,//入力スロットのインデックス
 			D3D12_APPEND_ALIGNED_ELEMENT,//データオフセットの位置
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,//データの内容一頂点ごとにこのデータが入ってる
@@ -365,8 +364,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	result = _dev->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&_pipelinestate));
 
 	D3D12_VIEWPORT viewport = {};
-	viewport.Width = WINDOW_WIDTH;
-	viewport.Height = WINDOW_HEIGHT;
+	viewport.Width = static_cast<float>(WINDOW_WIDTH);
+	viewport.Height = static_cast<float>(WINDOW_HEIGHT);
 	viewport.TopLeftX = 0;//出力先の左上座標X
 	viewport.TopLeftY = 0;//出力先の左上座標Y
 	viewport.MaxDepth = 1.0f;//深度最大値
@@ -397,30 +396,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		BarrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;//今からレンダターゲット状態
 		_cmdList->ResourceBarrier(1, &BarrierDesc);//バリア指定実行
 		
-		result = _cmdAllocator->Reset();//[invistigate]
-
 		
-		_cmdList->ResourceBarrier(1, &BarrierDesc);
 		//レンダターゲット指定
 		auto rtvH = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
 		rtvH.ptr +=  static_cast<ULONG_PTR>(bbIdx * _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
 		_cmdList->OMSetRenderTargets(1, &rtvH, false, nullptr);
 
 		float clearColor[] = { 1.0f,1.0f,0.0f,1.0f };//黄色で画面クリア
+
 		_cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
 		_cmdList->SetPipelineState(_pipelinestate);
-		_cmdList->SetComputeRootSignature(rootsignature);
+		_cmdList->SetGraphicsRootSignature(rootsignature);
+
 		_cmdList->RSSetViewports(1, &viewport);
 		_cmdList->RSSetScissorRects(1, &scissorrect);
 		_cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		_cmdList->IASetVertexBuffers(0, 1, &vbView);
+
 		_cmdList->DrawInstanced(3, 1, 0, 0);//描画命令実行
+
 		BarrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		BarrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 		_cmdList->ResourceBarrier(1, &BarrierDesc);
 		//命令のクローズ
 		_cmdList->Close();
-
+		//コマンドリストの実行
 		ID3D12CommandList* cmdlists[] = { _cmdList };
 		cmdQueue->ExecuteCommandLists(1, cmdlists);
 		////待ち
