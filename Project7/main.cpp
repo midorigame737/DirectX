@@ -200,7 +200,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	heapprop.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;//ヒープのページプロパティを指定するD3D12_CPU_PAGE_PROPERTY型指定された値。(よくわからん)
 	D3D12_RESOURCE_DESC resdesc = {};//テクスチャなどのリソース
 	resdesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;//リソースのディメンションかバッファを指定する
-	sizeof(vertices);
 	resdesc.Width = sizeof(vertices);
 	resdesc.Height = 1;//リソースの幅
 	resdesc.DepthOrArraySize = 1;//3Dの場合はリソースの深さを1Dor2D の場合配列サイズをの指定
@@ -302,7 +301,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{
 			"POSITION",//データが何を表すか、今回は座標なのでPOSITION
 			0,//同じセマンティクスのがあるときのインデックス、ないので0
-			DXGI_FORMAT_R32G32B32A32_FLOAT,//データのフォーマット
+			DXGI_FORMAT_R32G32B32_FLOAT,//データのフォーマット
 			0,//入力スロットのインデックス
 			D3D12_APPEND_ALIGNED_ELEMENT,//データオフセットの位置
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,//データの内容一頂点ごとにこのデータが入ってる
@@ -365,8 +364,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	result = _dev->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&_pipelinestate));
 
 	D3D12_VIEWPORT viewport = {};
-	viewport.Width = WINDOW_WIDTH;
-	viewport.Height = WINDOW_HEIGHT;
+	viewport.Width = static_cast<float>(WINDOW_WIDTH);
+	viewport.Height = static_cast<float>(WINDOW_HEIGHT);
 	viewport.TopLeftX = 0;//出力先の左上座標X
 	viewport.TopLeftY = 0;//出力先の左上座標Y
 	viewport.MaxDepth = 1.0f;//深度最大値
