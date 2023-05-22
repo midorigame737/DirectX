@@ -2,9 +2,11 @@
 #include<DirectXMath.h>
 #include<d3dcompiler.h>
 #include<vector>
+#define DEBUG
 #ifdef _DEBUG 
 #include<iostream>
 #endif
+
 #include <tchar.h>
 #include<d3d12.h>
 #include<dxgi1_6.h>
@@ -66,9 +68,9 @@ ID3DBlob* vsBlob = nullptr;
 ID3DBlob* psBlob = nullptr;
 ID3DBlob* errorBlob = nullptr;
 XMFLOAT3 vertices[]={//頂点座標定義
-	{-1.0f,-1.0f,0.0f},//左下
-	{-1.0f,1.0f,0.0f},//左上
-	{1.0f,-1.0f,0.0f}//右下
+	{-0.5f,-0.7f,0.0f},//左下
+	{0.0f,0.7f,0.0f},//左上
+	{0.5f,-0.7f,0.0f}//右下
 };
 #ifdef _DEBUG
 int main() {
@@ -228,7 +230,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	std::copy(std::begin(vertices),
 	std::end(vertices), vertMap);
 		vertBuff->Unmap(0, nullptr);
-		//ディスクリプタ:GPUメモリ上に存在する、様々なデータやバッファの種類や位置、大きさ
 		D3D12_VERTEX_BUFFER_VIEW vbView = {};
 		vbView.BufferLocation = vertBuff->GetGPUVirtualAddress();//バッファの仮想アドレス
 		vbView.SizeInBytes = sizeof(vertices);//全バイト数
@@ -358,14 +359,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		rootSigBlob->GetBufferSize(),//シェーダーのときと同様
 		IID_PPV_ARGS(&rootsignature)//不要になったので解放
 	);
+	rootSigBlob->Release();
 	gpipeline.pRootSignature = rootsignature;
 
 	//バイナリコードをもとにルートシグネクチャオブジェクトを生成
 	result = _dev->CreateGraphicsPipelineState(&gpipeline, IID_PPV_ARGS(&_pipelinestate));
 
 	D3D12_VIEWPORT viewport = {};
-	viewport.Width = static_cast<float>(WINDOW_WIDTH);
-	viewport.Height = static_cast<float>(WINDOW_HEIGHT);
+	viewport.Width = WINDOW_WIDTH;
+	viewport.Height = WINDOW_HEIGHT;
 	viewport.TopLeftX = 0;//出力先の左上座標X
 	viewport.TopLeftY = 0;//出力先の左上座標Y
 	viewport.MaxDepth = 1.0f;//深度最大値
@@ -410,7 +412,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		_cmdList->RSSetViewports(1, &viewport);
 		_cmdList->RSSetScissorRects(1, &scissorrect);
-		_cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		_cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);//頂点の組み合わせ方、今回は3角形
 		_cmdList->IASetVertexBuffers(0, 1, &vbView);
 
 		_cmdList->DrawInstanced(3, 1, 0, 0);//描画命令実行
